@@ -11,4 +11,5 @@ public interface FamiliaService {
     Familia buscarFamiliaPorId(Long codigo);
     void deletarFamilia(Long codigo);
     Familia atualizarFamilia(Long codigo, Familia familia);
+    List<Familia> buscarPorNome(String nome);
 }

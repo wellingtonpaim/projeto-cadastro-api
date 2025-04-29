@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        .header { display: flex; align-items: center; margin-bottom: 20px; }
+        .logo { width: 160px; height: 160px; }
+        .empresa-info { margin-left: 20px; }
+        .center-title { text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .right { text-align: right; }
+        .cliente-info, .produtos { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img th:src="@{${empresa.logotipoPath}}" class="logo" />
+    <div class="empresa-info">
+        <div><b th:text="${empresa.razaoSocial}"></b></div>
+        <div th:text="${empresa.endereco}"></div>
+        <div th:text="'CNPJ: ' + ${empresa.cnpj}"></div>
+        <div th:text="'IE: ' + ${empresa.inscricaoEstadual}"></div>
+        <div th:text="'Telefone: ' + ${empresa.telefone}"></div>
+        <div th:text="'Email: ' + ${empresa.email}"></div>
+        <div th:text="${empresa.site}"></div>
+    </div>
+</div>
+
+<div class="center-title">
+    Ordem de Serviço: <span th:text="${servico.codigo}"></span>
+</div>
+
+<div class="row">
+    <div>Data abertura do chamado: <span th:text="${servico.dataCriacao}"></span></div>
+    <div class="right">Data Impressão: <span th:text="${dataImpressao}"></span></div>
+</div>
+
+<div class="cliente-info">
+    <h4>Cliente</h4>
+    <div>Nome/Razão Social: <span th:text="${servico.cliente.nomeOuRazaoSocial}"></span></div>
+    <div>Email: <span th:text="${servico.cliente.email}"></span></div>
+    <div>Telefone: <span th:text="${servico.cliente.telefones[0].numero}"></span></div>
+    <div>Endereço: <span th:text="${servico.cliente.endereco.logradouro} + ', ' + ${servico.cliente.endereco.numero}"></span></div>
+</div>
+
+<div class="mao-de-obra">
+    <h4>Serviço contratado:</h4>
+    <div th:text="${servico.maoDeObra.descricao}"></div>
+    <div>Preço da mão de obra: R$ <span th:text="${servico.maoDeObra.preco}"></span></div>
+</div>
+
+<div class="produtos">
+    <h4>Lista de Produtos:</h4>
+    <ul>
+        <li th:each="produto : ${servico.produtos}">
+            <span th:text="${produto.nome}"></span> - R$ <span th:text="${produto.preco}"></span>
+        </li>
+    </ul>
+</div>
+
+<div class="totais">
+    <div class="right">Preço Total Produtos: R$ <span th:text="${servico.precoTotalProdutos}"></span></div>
+    <div class="right">Preço Total: R$ <span th:text="${servico.precoTotal}"></span></div>
+    <div class="right">Desconto: R$ <span th:text="${servico.desconto.valor}"></span></div>
+    <div class="right">Valor total com Desconto: R$ <span th:text="${servico.precoTotalComDesconto}"></span></div>
+</div>
+
+</body>
+</html>

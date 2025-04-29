@@ -2,56 +2,36 @@ package br.univesp.pi.service.impl;
 
 import br.univesp.pi.domain.model.Usuario;
 import br.univesp.pi.repository.UsuarioRepository;
+import br.univesp.pi.security.util.PasswordUtils;
 import br.univesp.pi.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
+@RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     @Override
     public Usuario salvarUsuario(Usuario usuario) {
+        usuario.setSenha(PasswordUtils.encodeIfNeeded(usuario.getSenha(), passwordEncoder));
         return usuarioRepository.save(usuario);
     }
 
     @Override
-    public List<Usuario> listarUsuarios() {
-        return usuarioRepository.findAll();
+    public Usuario findByEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElse(null);
     }
 
+    @Transactional
     @Override
-    public Usuario buscarUsuarioPorId(String cpfOuCnpj) {
-        return usuarioRepository.findById(cpfOuCnpj).orElse(null);
-    }
-
-    @Override
-    public void deletarUsuario(String cpfOuCnpj) {
-        usuarioRepository.deleteById(cpfOuCnpj);
-    }
-
-    @Override
-    public Usuario atualizarUsuario(String cpfOuCnpj, Usuario usuario) {
-        Usuario usuarioExistente = usuarioRepository.findById(cpfOuCnpj).orElse(null);
-        if (usuarioExistente != null) {
-            usuario.setCPFouCnpj(cpfOuCnpj);
-            return usuarioRepository.save(usuario);
-        }
-        return null;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario usuario = buscarUsuarioPorId(username);
-        if (usuario == null) {
-            throw new UsernameNotFoundException("Usuário não encontrado");
-        }
-        return new UserDetailsImpl(usuario);
+    public void deletarUsuario(Long id) {
+        usuarioRepository.deleteById(id);
     }
 }
