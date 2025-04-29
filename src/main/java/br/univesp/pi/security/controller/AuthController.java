@@ -1,6 +1,9 @@
 package br.univesp.pi.security.controller;
 
+import br.univesp.pi.domain.dto.UsuarioRegisterDTO;
+import br.univesp.pi.security.service.AuthService;
 import br.univesp.pi.security.service.JWTTokenService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,19 +19,47 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JWTTokenService jwtTokenService;
+    private final AuthService authService;
 
-    @PostMapping("/token")
-    public ResponseEntity<String> getToken(@RequestParam String username,
-                                           @RequestParam String password) {
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestParam String username, @RequestParam String password) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
             );
-
             String token = jwtTokenService.generateToken(username);
             return ResponseEntity.ok(token);
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
         }
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody UsuarioRegisterDTO dto) {
+        try {
+            authService.register(dto);
+            return ResponseEntity.ok("E-mail de confirmação enviado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro ao registrar usuário!");
+        }
+    }
+
+    @GetMapping("/confirmar")
+    public ResponseEntity<?> confirmEmail(@RequestParam String token) {
+        try {
+            authService.confirmEmail(token);
+            return ResponseEntity.ok("E-mail confirmado com sucesso!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete/{email}")
+    public ResponseEntity<String> deleteUserByEmail(@PathVariable String email) {
+        authService.deleteUserByEmail(email);
+        return ResponseEntity.ok("Usuário com e-mail \"" + email + "\" excluído com sucesso!");
+    }
+
 }

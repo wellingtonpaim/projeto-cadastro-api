@@ -1,6 +1,7 @@
 package br.univesp.pi.controller;
 
 import br.univesp.pi.domain.model.Familia;
+import br.univesp.pi.domain.model.Produto;
 import br.univesp.pi.service.FamiliaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,5 +44,10 @@ public class FamiliaController {
     public ResponseEntity<Familia> atualizarFamilia(@PathVariable Long codigo, @RequestBody Familia familia) {
         Familia familiaAtualizada = familiaService.atualizarFamilia(codigo, familia);
         return ResponseEntity.ok(familiaAtualizada);
+    }
+
+    @GetMapping("/nome/{nome}")
+    public ResponseEntity<List<Familia>> buscarPorNome(@PathVariable String nome) {
+        return ResponseEntity.ok(familiaService.buscarPorNome(nome));
     }
 }

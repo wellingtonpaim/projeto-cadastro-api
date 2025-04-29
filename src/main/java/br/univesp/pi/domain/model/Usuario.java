@@ -1,42 +1,38 @@
 package br.univesp.pi.domain.model;
 
 import br.univesp.pi.enumeration.CategoriaUsuario;
-import br.univesp.pi.enumeration.TipoPessoa;
-import br.univesp.pi.validation.CpfCnpj;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 @Entity
+@Table(name = "usuario")
 public class Usuario {
 
     @Id
-    @CpfCnpj
-    private String CPFouCnpj;
-
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private TipoPessoa tipoPessoa;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank
-    private String nomeOuRazaoSocial;
+    @Column(name = "nome_usuario")
+    private String nomeUsuario;
 
+    @NotBlank
     @Column(unique = true)
     @Email
     private String email;
 
-    @ElementCollection
-    private List<Telefone> telefones;
+    @NotBlank
+    private String senha;
 
-    @Embedded
-    private Endereco endereco;
-
-    @Enumerated(EnumType.STRING)
     @NotNull
+    @Enumerated(EnumType.STRING)
     private CategoriaUsuario categoria;
+
+    @Column(columnDefinition = "boolean default false")
+    private boolean ativo;
+
 }

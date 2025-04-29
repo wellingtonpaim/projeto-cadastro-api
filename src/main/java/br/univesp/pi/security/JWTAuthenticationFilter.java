@@ -1,6 +1,7 @@
 package br.univesp.pi.security;
 
 import br.univesp.pi.security.enums.SECURITY_CONSTANTS;
+import br.univesp.pi.security.service.CustomUserDetailsService;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -11,12 +12,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
+
+    private final CustomUserDetailsService userDetailsService;
+
+    public JWTAuthenticationFilter(CustomUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -28,14 +35,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null && token.startsWith(SECURITY_CONSTANTS.TOKEN_PREFIX)) {
             try {
-                String user = JWT.require(Algorithm.HMAC512(SECURITY_CONSTANTS.SECRET.getBytes()))
+                String username = JWT.require(Algorithm.HMAC512(SECURITY_CONSTANTS.SECRET.getBytes()))
                         .build()
                         .verify(token.replace(SECURITY_CONSTANTS.TOKEN_PREFIX, ""))
                         .getSubject();
 
-                if (user != null) {
+                if (username != null) {
+                    // Carrega as roles do usuário
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     Authentication auth = new UsernamePasswordAuthenticationToken(
-                            user, null, Collections.emptyList());
+                            username, null, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (JWTVerificationException e) {
