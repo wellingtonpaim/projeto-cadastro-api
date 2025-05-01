@@ -1,11 +1,16 @@
 package br.univesp.pi.service.impl;
 
-import br.univesp.pi.domain.model.Pessoa;
+import br.univesp.pi.domain.dto.ServicoCreateDTO;
+import br.univesp.pi.domain.dto.ServicoUpdateDTO;
+import br.univesp.pi.domain.model.Cliente;
 import br.univesp.pi.domain.model.Produto;
 import br.univesp.pi.domain.model.Servico;
 import br.univesp.pi.enumeration.TipoDesconto;
+import br.univesp.pi.repository.ClienteRepository;
+import br.univesp.pi.repository.ProdutoRepository;
 import br.univesp.pi.repository.ServicoRepository;
 import br.univesp.pi.service.ServicoService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,9 +23,27 @@ public class ServicoServiceImpl implements ServicoService {
     @Autowired
     private ServicoRepository servicoRepository;
 
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
     @Transactional
     @Override
-    public Servico salvarServico(Servico servico) {
+    public Servico salvarServico(ServicoCreateDTO dto) {
+
+        Cliente cliente = clienteRepository.findByCpfOuCnpj(dto.getCliente())
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+
+        List<Produto> produtos = produtoRepository.findAllByCodigo(dto.getProdutos());
+
+        Servico servico = new Servico();
+        servico.setCliente(cliente);
+        servico.setMaoDeObra(dto.getMaoDeObra());
+        servico.setProdutos(produtos);
+        servico.setDesconto(dto.getDesconto());
+
         calcularTotais(servico);
         return servicoRepository.save(servico);
     }
@@ -35,32 +58,44 @@ public class ServicoServiceImpl implements ServicoService {
         return servicoRepository.findById(codigo).orElse(null);
     }
 
+    @Override
+    public List<Servico> buscarServicosPorClienteId(String cpfOuCnpj) {
+        return servicoRepository.findByCliente_CpfOuCnpj(cpfOuCnpj);
+    }
+
+    @Transactional
+    @Override
+    public Servico atualizarServico(Long codigo, ServicoUpdateDTO dto) {
+        Servico servicoExistente = servicoRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado"));
+
+        if (dto.getCliente() != null) {
+            Cliente cliente = clienteRepository.findById(dto.getCliente())
+                    .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+            servicoExistente.setCliente(cliente);
+        }
+
+        if (dto.getMaoDeObra() != null) {
+            servicoExistente.setMaoDeObra(dto.getMaoDeObra());
+        }
+
+        if (dto.getProdutos() != null && !dto.getProdutos().isEmpty()) {
+            List<Produto> produtos = produtoRepository.findAllById(dto.getProdutos());
+            servicoExistente.setProdutos(produtos);
+        }
+
+        if (dto.getDesconto() != null) {
+            servicoExistente.setDesconto(dto.getDesconto());
+        }
+
+        calcularTotais(servicoExistente);
+        return servicoRepository.save(servicoExistente);
+    }
+
     @Transactional
     @Override
     public void deletarServico(Long codigo) {
         servicoRepository.deleteById(codigo);
-    }
-
-    @Transactional
-    @Override
-    public Servico atualizarServico(Long codigo, Servico servico) {
-        Servico servicoExistente = servicoRepository.findById(codigo).orElse(null);
-        if (servicoExistente != null) {
-            servico.setCodigo(codigo);
-            calcularTotais(servico);
-            return servicoRepository.save(servico);
-        }
-        return null;
-    }
-
-    @Override
-    public List<Servico> buscarServicosPorCliente(Pessoa cliente) {
-        return servicoRepository.findByCliente(cliente);
-    }
-
-    @Override
-    public List<Servico> buscarServicosPorClienteId(String cpfOuCnpj) {
-        return servicoRepository.findByCliente_CpfOuCnpj(cpfOuCnpj);
     }
 
     // =======================

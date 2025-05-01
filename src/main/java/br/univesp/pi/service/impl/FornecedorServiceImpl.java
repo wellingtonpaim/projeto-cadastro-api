@@ -1,8 +1,11 @@
 package br.univesp.pi.service.impl;
 
+import br.univesp.pi.domain.dto.FornecedorCreateDTO;
+import br.univesp.pi.domain.dto.FornecedorUpdateDTO;
 import br.univesp.pi.domain.model.Fornecedor;
 import br.univesp.pi.repository.FornecedorRepository;
 import br.univesp.pi.service.FornecedorService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,38 +17,73 @@ public class FornecedorServiceImpl implements FornecedorService {
     @Autowired
     private FornecedorRepository fornecedorRepository;
 
-    public Fornecedor salvar(Fornecedor fornecedor) {
+    @Transactional
+    @Override
+    public Fornecedor salvarFornecedor(FornecedorCreateDTO dto) {
+        Fornecedor fornecedor = new Fornecedor();
+        fornecedor.setCpfOuCnpj(dto.getCpfOuCnpj());
+        fornecedor.setTipoPessoa(dto.getTipoPessoa());
+        fornecedor.setNomeOuRazaoSocial(dto.getNomeOuRazaoSocial());
+        fornecedor.setEmail(dto.getEmail());
+        fornecedor.setTelefones(dto.getTelefones());
+        fornecedor.setEndereco(dto.getEndereco());
         return fornecedorRepository.save(fornecedor);
     }
 
-    public List<Fornecedor> listarTodos() {
+    @Override
+    public List<Fornecedor> listarFornecedores() {
         return fornecedorRepository.findAll();
     }
 
-    public Fornecedor buscarPorCpfOuCnpj(String cpfOuCnpj) {
+    @Override
+    public Fornecedor buscarFornecedorPorCpfOuCnpj(String cpfOuCnpj) {
         return fornecedorRepository.findById(cpfOuCnpj).orElse(null);
     }
 
     @Override
-    public List<Fornecedor> buscarPorNomeOuRazaoSocial(String nomeOuRazaoSocial) {
+    public List<Fornecedor> buscarFornecedorPorNomeOuRazaoSocial(String nomeOuRazaoSocial) {
         return fornecedorRepository.findByNomeOuRazaoSocialContainingIgnoreCase(nomeOuRazaoSocial);
     }
 
     @Override
-    public List<Fornecedor> buscarPorEmail(String email) {
+    public List<Fornecedor> buscarFornecedorPorEmail(String email) {
         return fornecedorRepository.findByEmailContainingIgnoreCase(email);
     }
 
-    public Fornecedor atualizar(String cpfOuCnpj, Fornecedor fornecedorAtualizado) {
-        Fornecedor fornecedorExistente = buscarPorCpfOuCnpj(cpfOuCnpj);
-        if (fornecedorExistente != null) {
-            fornecedorAtualizado.setCpfOuCnpj(cpfOuCnpj);
-            return fornecedorRepository.save(fornecedorAtualizado);
+    @Transactional
+    @Override
+    public Fornecedor atualizarFornecedor(String cpfOuCnpj, FornecedorUpdateDTO dto) {
+        Fornecedor fornecedorExistente = buscarFornecedorPorCpfOuCnpj(cpfOuCnpj);
+        if (fornecedorExistente == null) {
+            throw new IllegalArgumentException("Fornecedor não encontrado com CPF/CNPJ: " + cpfOuCnpj);
         }
-        return null;
+
+        if (dto.getTipoPessoa() != null) {
+            fornecedorExistente.setTipoPessoa(dto.getTipoPessoa());
+        }
+
+        if (dto.getNomeOuRazaoSocial() != null) {
+            fornecedorExistente.setNomeOuRazaoSocial(dto.getNomeOuRazaoSocial());
+        }
+
+        if (dto.getEmail() != null) {
+            fornecedorExistente.setEmail(dto.getEmail());
+        }
+
+        if (dto.getTelefones() != null) {
+            fornecedorExistente.setTelefones(dto.getTelefones());
+        }
+
+        if (dto.getEndereco() != null) {
+            fornecedorExistente.setEndereco(dto.getEndereco());
+        }
+
+        return fornecedorRepository.save(fornecedorExistente);
     }
 
-    public void deletar(String cpfOuCnpj) {
+    @Transactional
+    @Override
+    public void deletarFornecedor(String cpfOuCnpj) {
         fornecedorRepository.deleteById(cpfOuCnpj);
     }
 }

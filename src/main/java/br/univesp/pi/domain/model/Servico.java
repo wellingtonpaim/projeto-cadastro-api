@@ -1,7 +1,6 @@
 package br.univesp.pi.domain.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -17,7 +16,6 @@ public class Servico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "cliente", referencedColumnName = "cpf_ou_cnpj", nullable = false)
     private Cliente cliente;

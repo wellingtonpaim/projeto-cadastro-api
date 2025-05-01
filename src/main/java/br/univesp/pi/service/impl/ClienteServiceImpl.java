@@ -1,8 +1,11 @@
 package br.univesp.pi.service.impl;
 
+import br.univesp.pi.domain.dto.ClienteCreateDTO;
+import br.univesp.pi.domain.dto.ClienteUpdateDTO;
 import br.univesp.pi.domain.model.Cliente;
 import br.univesp.pi.repository.ClienteRepository;
 import br.univesp.pi.service.ClienteService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,38 +17,73 @@ public class ClienteServiceImpl implements ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    public Cliente salvar(Cliente cliente) {
+    @Transactional
+    @Override
+    public Cliente salvarCliente(ClienteCreateDTO dto) {
+        Cliente cliente = new Cliente();
+        cliente.setCpfOuCnpj(dto.getCpfOuCnpj());
+        cliente.setTipoPessoa(dto.getTipoPessoa());
+        cliente.setNomeOuRazaoSocial(dto.getNomeOuRazaoSocial());
+        cliente.setEmail(dto.getEmail());
+        cliente.setTelefones(dto.getTelefones());
+        cliente.setEndereco(dto.getEndereco());
         return clienteRepository.save(cliente);
     }
 
-    public List<Cliente> listarTodos() {
+    @Override
+    public List<Cliente> listarClientes() {
         return clienteRepository.findAll();
     }
 
-    public Cliente buscarPorCpfOuCnpj(String cpfOuCnpj) {
+    @Override
+    public Cliente buscarClientePorCpfOuCnpj(String cpfOuCnpj) {
         return clienteRepository.findById(cpfOuCnpj).orElse(null);
     }
 
     @Override
-    public List<Cliente> buscarPorNomeOuRazaoSocial(String nomeOuRazaoSocial) {
+    public List<Cliente> buscarClientePorNomeOuRazaoSocial(String nomeOuRazaoSocial) {
         return clienteRepository.findByNomeOuRazaoSocialContainingIgnoreCase(nomeOuRazaoSocial);
     }
 
     @Override
-    public List<Cliente> buscarPorEmail(String email) {
+    public List<Cliente> buscarClientePorEmail(String email) {
         return clienteRepository.findByEmailContainingIgnoreCase(email);
     }
 
-    public Cliente atualizar(String cpfOuCnpj, Cliente clienteAtualizado) {
-        Cliente clienteExistente = buscarPorCpfOuCnpj(cpfOuCnpj);
-        if (clienteExistente != null) {
-            clienteAtualizado.setCpfOuCnpj(cpfOuCnpj);
-            return clienteRepository.save(clienteAtualizado);
+    @Transactional
+    @Override
+    public Cliente atualizarCliente(String cpfOuCnpj, ClienteUpdateDTO dto) {
+        Cliente clienteExistente = buscarClientePorCpfOuCnpj(cpfOuCnpj);
+        if (clienteExistente == null) {
+            throw new IllegalArgumentException("Cliente não encontrado com CPF/CNPJ: " + cpfOuCnpj);
         }
-        return null;
+
+        if (dto.getTipoPessoa() != null) {
+            clienteExistente.setTipoPessoa(dto.getTipoPessoa());
+        }
+
+        if (dto.getNomeOuRazaoSocial() != null) {
+            clienteExistente.setNomeOuRazaoSocial(dto.getNomeOuRazaoSocial());
+        }
+
+        if (dto.getEmail() != null) {
+            clienteExistente.setEmail(dto.getEmail());
+        }
+
+        if (dto.getTelefones() != null) {
+            clienteExistente.setTelefones(dto.getTelefones());
+        }
+
+        if (dto.getEndereco() != null) {
+            clienteExistente.setEndereco(dto.getEndereco());
+        }
+
+        return clienteRepository.save(clienteExistente);
     }
 
-    public void deletar(String cpfOuCnpj) {
+    @Transactional
+    @Override
+    public void deletarCliente(String cpfOuCnpj) {
         clienteRepository.deleteById(cpfOuCnpj);
     }
 }

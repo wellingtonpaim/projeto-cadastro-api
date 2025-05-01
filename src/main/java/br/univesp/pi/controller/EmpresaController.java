@@ -1,43 +1,45 @@
 package br.univesp.pi.controller;
 
+import br.univesp.pi.domain.dto.EmpresaCreateDTO;
+import br.univesp.pi.domain.dto.EmpresaUpdateDTO;
 import br.univesp.pi.domain.model.Empresa;
 import br.univesp.pi.service.EmpresaService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/empresas")
-@RequiredArgsConstructor
+@RequestMapping("/empresa")
 public class EmpresaController {
 
-    private final EmpresaService empresaService;
+    @Autowired
+    private EmpresaService empresaService;
 
     @PostMapping
-    public Empresa salvar(@Valid @RequestBody Empresa empresa) {
-        return empresaService.salvar(empresa);
-    }
-
-    @PutMapping("/{id}")
-    public Empresa atualizar(@PathVariable Long id, @Valid @RequestBody Empresa empresa) {
-        return empresaService.atualizar(id, empresa);
-    }
-
-    @DeleteMapping("/{id}")
-    public void excluir(@PathVariable Long id) {
-        empresaService.excluir(id);
-    }
-
-    @GetMapping("/{id}")
-    public Empresa buscarPorId(@PathVariable Long id) {
-        return empresaService.buscarPorId(id);
+    public Empresa salvarEmpresa(@Valid @RequestBody EmpresaCreateDTO empresa) {
+        return empresaService.salvarEmpresa(empresa);
     }
 
     @GetMapping
-    public List<Empresa> listarTodas() {
-        return empresaService.listarTodas();
+    public List<Empresa> listarEmpresas() {
+        return empresaService.listarEmpresas();
+    }
+
+    @GetMapping("/{id}")
+    public Empresa buscarEmpresaPorId(@PathVariable Long id) {
+        return empresaService.buscarEmpresasPorId(id);
+    }
+
+    @PutMapping("/{id}")
+    public Empresa atualizarEmpresa(@PathVariable Long id, @Valid @RequestBody EmpresaUpdateDTO empresa) {
+        return empresaService.atualizarEmpresa(id, empresa);
+    }
+
+    @DeleteMapping("/{id}")
+    public void excluirEmpresa(@PathVariable Long id) {
+        empresaService.excluirEmpresa(id);
     }
 }
 

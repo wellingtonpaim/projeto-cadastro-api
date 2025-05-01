@@ -3,7 +3,7 @@ package br.univesp.pi.domain.dto;
 import lombok.Data;
 
 @Data
-public class ProdutoDTO {
+public class ProdutoUpdateDTO {
 
     private Long familia;
     private String nome;

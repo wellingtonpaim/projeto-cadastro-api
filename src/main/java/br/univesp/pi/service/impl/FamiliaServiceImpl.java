@@ -1,5 +1,6 @@
 package br.univesp.pi.service.impl;
 
+import br.univesp.pi.domain.dto.FamiliaDTO;
 import br.univesp.pi.domain.model.Familia;
 import br.univesp.pi.repository.FamiliaRepository;
 import br.univesp.pi.service.FamiliaService;
@@ -17,7 +18,9 @@ public class FamiliaServiceImpl implements FamiliaService {
 
     @Transactional
     @Override
-    public Familia salvarFamilia(Familia familia) {
+    public Familia salvarFamilia(FamiliaDTO dto) {
+        Familia familia = new Familia();
+        familia.setNome(dto.getNome());
         return familiaRepository.save(familia);
     }
 
@@ -31,25 +34,26 @@ public class FamiliaServiceImpl implements FamiliaService {
         return familiaRepository.findById(codigo).orElse(null);
     }
 
+    @Override
+    public List<Familia> buscarPorNome(String nome) {
+        return familiaRepository.findByNomeContainingIgnoreCase(nome);
+    }
+
+    @Transactional
+    @Override
+    public Familia atualizarFamilia(Long codigo, FamiliaDTO dto) {
+        Familia familiaExistente = familiaRepository.findById(codigo).orElse(null);
+        if (familiaExistente != null) {
+            familiaExistente.setNome(dto.getNome());
+            return familiaRepository.save(familiaExistente);
+        }
+        return null;
+    }
+
     @Transactional
     @Override
     public void deletarFamilia(Long codigo) {
         familiaRepository.deleteById(codigo);
     }
 
-    @Transactional
-    @Override
-    public Familia atualizarFamilia(Long codigo, Familia familia) {
-        Familia familiaExistente = familiaRepository.findById(codigo).orElse(null);
-        if (familiaExistente != null) {
-            familia.setCodigo(codigo);
-            return familiaRepository.save(familia);
-        }
-        return null;
-    }
-
-    @Override
-    public List<Familia> buscarPorNome(String nome) {
-        return familiaRepository.findByNomeContainingIgnoreCase(nome);
-    }
 }
