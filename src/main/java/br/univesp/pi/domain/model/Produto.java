@@ -16,24 +16,19 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "familia", nullable = false)
     private Familia familia;
 
-    @NotBlank
     @Column(nullable = false)
     private String nome;
 
-    @NotBlank
     @Column(nullable = false)
     private String descricao;
 
-    @NotNull
     @Column(nullable = false)
     private Double preco;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fornecedor", referencedColumnName = "cpf_ou_cnpj", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

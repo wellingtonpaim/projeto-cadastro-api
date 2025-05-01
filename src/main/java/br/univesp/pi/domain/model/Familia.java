@@ -15,6 +15,5 @@ public class Familia {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;
 
-    @NotBlank
     private String nome;
 }

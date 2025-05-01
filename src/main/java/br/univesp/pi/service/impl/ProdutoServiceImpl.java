@@ -1,16 +1,16 @@
 package br.univesp.pi.service.impl;
 
-import br.univesp.pi.domain.dto.ProdutoDTO;
+import br.univesp.pi.domain.dto.ProdutoCreateDTO;
+import br.univesp.pi.domain.dto.ProdutoUpdateDTO;
 import br.univesp.pi.domain.model.Familia;
 import br.univesp.pi.domain.model.Fornecedor;
-import br.univesp.pi.domain.model.Pessoa;
 import br.univesp.pi.domain.model.Produto;
-import br.univesp.pi.enumeration.CategoriaPessoa;
 import br.univesp.pi.repository.FamiliaRepository;
 import br.univesp.pi.repository.FornecedorRepository;
 import br.univesp.pi.repository.ProdutoRepository;
 import br.univesp.pi.service.ProdutoService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,22 +30,22 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Transactional
     @Override
-    public Produto salvarProduto(ProdutoDTO produtoDTO) {
+    public Produto salvarProduto(@Valid ProdutoCreateDTO produtoCreateDTO) {
 
-        Fornecedor fornecedor = fornecedorRepository.findByCpfOuCnpj(produtoDTO.getFornecedor())
-                .orElseThrow(() -> new IllegalArgumentException("Fornecedor não encontrado com CPF/CNPJ: " + produtoDTO.getFornecedor()));
+        Fornecedor fornecedor = fornecedorRepository.findByCpfOuCnpj(produtoCreateDTO.getFornecedor())
+                .orElseThrow(() -> new IllegalArgumentException("Fornecedor não encontrado com CPF/CNPJ: " + produtoCreateDTO.getFornecedor()));
 
         Familia familia = null;
-        if (produtoDTO.getFamilia() != null) {
-            familia = familiaRepository.findById(produtoDTO.getFamilia())
-                    .orElseThrow(() -> new IllegalArgumentException("Família não encontrada"));
+        if (produtoCreateDTO.getFamilia() != null) {
+            familia = familiaRepository.findById(produtoCreateDTO.getFamilia())
+                    .orElseThrow(() -> new IllegalArgumentException("Família de produtos não encontrada"));
         }
 
         Produto produto = new Produto();
         produto.setFamilia(familia);
-        produto.setNome(produtoDTO.getNome());
-        produto.setDescricao(produtoDTO.getDescricao());
-        produto.setPreco(produtoDTO.getPreco());
+        produto.setNome(produtoCreateDTO.getNome());
+        produto.setDescricao(produtoCreateDTO.getDescricao());
+        produto.setPreco(produtoCreateDTO.getPreco());
         produto.setFornecedor(fornecedor);
 
         return produtoRepository.save(produto);
@@ -59,23 +59,6 @@ public class ProdutoServiceImpl implements ProdutoService {
     @Override
     public Produto buscarProdutoPorCodigo(Long codigo) {
         return produtoRepository.findByCodigo(codigo).orElse(null);
-    }
-
-    @Transactional
-    @Override
-    public void deletarProduto(Long codigo) {
-        produtoRepository.deleteById(codigo);
-    }
-
-    @Transactional
-    @Override
-    public Produto atualizarProduto(Long codigo, Produto produto) {
-        Produto produtoExistente = produtoRepository.findById(codigo).orElse(null);
-        if (produtoExistente != null) {
-            produto.setCodigo(codigo);
-            return produtoRepository.save(produto);
-        }
-        return null;
     }
 
     @Override
@@ -92,4 +75,45 @@ public class ProdutoServiceImpl implements ProdutoService {
     public List<Produto> buscarPorFamilia(Long codigoFamilia) {
         return produtoRepository.findByFamiliaCodigo(codigoFamilia);
     }
+
+    @Transactional
+    @Override
+    public Produto atualizarProduto(Long codigo, ProdutoUpdateDTO produtoCreateDTO) {
+        Produto produtoExistente = produtoRepository.findById(codigo).orElseThrow(
+                () -> new IllegalArgumentException("Produto não encontrado com código: " + codigo)
+        );
+
+        if (produtoCreateDTO.getNome() != null) {
+            produtoExistente.setNome(produtoCreateDTO.getNome());
+        }
+
+        if (produtoCreateDTO.getDescricao() != null) {
+            produtoExistente.setDescricao(produtoCreateDTO.getDescricao());
+        }
+
+        if (produtoCreateDTO.getPreco() != null) {
+            produtoExistente.setPreco(produtoCreateDTO.getPreco());
+        }
+
+        if (produtoCreateDTO.getFornecedor() != null) {
+            Fornecedor fornecedor = fornecedorRepository.findByCpfOuCnpj(produtoCreateDTO.getFornecedor())
+                    .orElseThrow(() -> new IllegalArgumentException("Fornecedor não encontrado com CPF/CNPJ: " + produtoCreateDTO.getFornecedor()));
+            produtoExistente.setFornecedor(fornecedor);
+        }
+
+        if (produtoCreateDTO.getFamilia() != null) {
+            Familia familia = familiaRepository.findById(produtoCreateDTO.getFamilia())
+                    .orElseThrow(() -> new IllegalArgumentException("Família não encontrada"));
+            produtoExistente.setFamilia(familia);
+        }
+
+        return produtoRepository.save(produtoExistente);
+    }
+
+    @Transactional
+    @Override
+    public void deletarProduto(Long codigo) {
+        produtoRepository.deleteById(codigo);
+    }
+
 }

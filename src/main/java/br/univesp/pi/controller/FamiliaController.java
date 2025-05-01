@@ -1,8 +1,9 @@
 package br.univesp.pi.controller;
 
+import br.univesp.pi.domain.dto.FamiliaDTO;
 import br.univesp.pi.domain.model.Familia;
-import br.univesp.pi.domain.model.Produto;
 import br.univesp.pi.service.FamiliaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,14 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/familias")
+@RequestMapping("/familia")
 public class FamiliaController {
 
     @Autowired
     private FamiliaService familiaService;
 
     @PostMapping
-    public ResponseEntity<Familia> salvarFamilia(@RequestBody Familia familia) {
+    public ResponseEntity<Familia> salvarFamilia(@Valid @RequestBody FamiliaDTO familia) {
         Familia familiaSalva = familiaService.salvarFamilia(familia);
         return ResponseEntity.ok(familiaSalva);
     }
@@ -34,20 +35,20 @@ public class FamiliaController {
         return ResponseEntity.ok(familia);
     }
 
-    @DeleteMapping("/{codigo}")
-    public ResponseEntity<Void> deletarFamilia(@PathVariable Long codigo) {
-        familiaService.deletarFamilia(codigo);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/nome/{nome}")
+    public ResponseEntity<List<Familia>> buscarPorNome(@PathVariable String nome) {
+        return ResponseEntity.ok(familiaService.buscarPorNome(nome));
     }
 
     @PutMapping("/{codigo}")
-    public ResponseEntity<Familia> atualizarFamilia(@PathVariable Long codigo, @RequestBody Familia familia) {
+    public ResponseEntity<Familia> atualizarFamilia(@PathVariable Long codigo, @Valid @RequestBody FamiliaDTO familia) {
         Familia familiaAtualizada = familiaService.atualizarFamilia(codigo, familia);
         return ResponseEntity.ok(familiaAtualizada);
     }
 
-    @GetMapping("/nome/{nome}")
-    public ResponseEntity<List<Familia>> buscarPorNome(@PathVariable String nome) {
-        return ResponseEntity.ok(familiaService.buscarPorNome(nome));
+    @DeleteMapping("/{codigo}")
+    public ResponseEntity<Void> deletarFamilia(@PathVariable Long codigo) {
+        familiaService.deletarFamilia(codigo);
+        return ResponseEntity.noContent().build();
     }
 }
