@@ -2,16 +2,20 @@ package br.univesp.pi.service.impl;
 
 import br.univesp.pi.domain.dto.ServicoCreateDTO;
 import br.univesp.pi.domain.dto.ServicoUpdateDTO;
+import br.univesp.pi.domain.dto.response.FamiliaResponseDTO;
+import br.univesp.pi.domain.dto.response.ServicoResponseDTO;
 import br.univesp.pi.domain.model.Cliente;
+import br.univesp.pi.domain.model.Familia;
 import br.univesp.pi.domain.model.Produto;
 import br.univesp.pi.domain.model.Servico;
 import br.univesp.pi.enumeration.TipoDesconto;
+import br.univesp.pi.exception.ApiIllegalArgumentException;
 import br.univesp.pi.repository.ClienteRepository;
 import br.univesp.pi.repository.ProdutoRepository;
 import br.univesp.pi.repository.ServicoRepository;
 import br.univesp.pi.service.ServicoService;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import br.univesp.pi.util.MapperUtil;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,14 +33,23 @@ public class ServicoServiceImpl implements ServicoService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
+    @Autowired
+    private MapperUtil mapperUtil;
+
+
     @Transactional
     @Override
-    public Servico salvarServico(ServicoCreateDTO dto) {
+    public ServicoResponseDTO salvarServico(ServicoCreateDTO dto) {
 
         Cliente cliente = clienteRepository.findByCpfOuCnpj(dto.getCliente())
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+                .orElseThrow(() -> new ApiIllegalArgumentException(
+                        "Cliente não encontrado",
+                        "Cliente",
+                        "cpfOuCnpj",
+                        dto.getCliente()
+                ));
 
-        List<Produto> produtos = produtoRepository.findAllByCodigo(dto.getProdutos());
+        List<Produto> produtos = produtoRepository.findAllById(dto.getProdutos());
 
         Servico servico = new Servico();
         servico.setCliente(cliente);
@@ -45,33 +58,64 @@ public class ServicoServiceImpl implements ServicoService {
         servico.setDesconto(dto.getDesconto());
 
         calcularTotais(servico);
-        return servicoRepository.save(servico);
+        Servico saved = servicoRepository.save(servico);
+
+        return mapperUtil.map(saved, ServicoResponseDTO.class);
     }
 
     @Override
-    public List<Servico> listarServicos() {
-        return servicoRepository.findAll();
+    public List<ServicoResponseDTO> listarServicos() {
+        List<Servico> servicos = servicoRepository.findAll();
+        return mapperUtil.mapList(servicos, ServicoResponseDTO.class);
     }
 
     @Override
-    public Servico buscarServicoPorId(Long codigo) {
-        return servicoRepository.findById(codigo).orElse(null);
+    public ServicoResponseDTO buscarServicoPorId(Long codigo) {
+        Servico servico = servicoRepository.findById(codigo).orElse(null);
+        if (servico == null) {
+            throw new ApiIllegalArgumentException(
+                    "Serviço não encontrado com o código: " + codigo,
+                    "Servico",
+                    "codigo",
+                    String.valueOf(codigo)
+            );
+        }
+        return mapperUtil.map(servico, ServicoResponseDTO.class);
     }
 
     @Override
-    public List<Servico> buscarServicosPorClienteId(String cpfOuCnpj) {
-        return servicoRepository.findByCliente_CpfOuCnpj(cpfOuCnpj);
+    public List<ServicoResponseDTO> buscarServicosPorClienteId(String cpfOuCnpj) {
+        List<Servico> servicos = servicoRepository.findByCliente_CpfOuCnpj(cpfOuCnpj);
+        if (servicos == null || servicos.isEmpty()) {
+            throw new ApiIllegalArgumentException(
+                    "Nenhum serviço encontrado para o cliente com CPF/CNPJ: " + cpfOuCnpj,
+                    "Servico",
+                    "cpfOuCnpj",
+                    cpfOuCnpj
+            );
+        }
+        return mapperUtil.mapList(servicos, ServicoResponseDTO.class);
     }
 
     @Transactional
     @Override
-    public Servico atualizarServico(Long codigo, ServicoUpdateDTO dto) {
+    public ServicoResponseDTO atualizarServico(Long codigo, ServicoUpdateDTO dto) {
         Servico servicoExistente = servicoRepository.findByCodigo(codigo)
-                .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado"));
+                .orElseThrow(() -> new ApiIllegalArgumentException(
+                        "Serviço não encontrado",
+                        "Servico",
+                        "codigo",
+                        String.valueOf(codigo)
+                ));
 
         if (dto.getCliente() != null) {
             Cliente cliente = clienteRepository.findById(dto.getCliente())
-                    .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+                    .orElseThrow(() -> new ApiIllegalArgumentException(
+                            "Cliente não encontrado",
+                            "Cliente",
+                            "cpfOuCnpj",
+                            dto.getCliente()
+                    ));
             servicoExistente.setCliente(cliente);
         }
 
@@ -79,17 +123,26 @@ public class ServicoServiceImpl implements ServicoService {
             servicoExistente.setMaoDeObra(dto.getMaoDeObra());
         }
 
-        if (dto.getProdutos() != null && !dto.getProdutos().isEmpty()) {
-            List<Produto> produtos = produtoRepository.findAllById(dto.getProdutos());
-            servicoExistente.setProdutos(produtos);
+        List<Long> codigosProdutos = dto.getProdutos();
+        List<Produto> produtos = produtoRepository.findAllById(codigosProdutos);
+        if (produtos.size() != codigosProdutos.size()) {
+            throw new ApiIllegalArgumentException(
+                    "Um ou mais produtos não foram encontrados",
+                    "Produto",
+                    "ids",
+                    codigosProdutos.toString()
+            );
         }
+        servicoExistente.setProdutos(produtos);
 
         if (dto.getDesconto() != null) {
             servicoExistente.setDesconto(dto.getDesconto());
         }
 
         calcularTotais(servicoExistente);
-        return servicoRepository.save(servicoExistente);
+        Servico atualizado = servicoRepository.save(servicoExistente);
+
+        return mapperUtil.map(atualizado, ServicoResponseDTO.class);
     }
 
     @Transactional

@@ -2,10 +2,13 @@ package br.univesp.pi.service.impl;
 
 import br.univesp.pi.domain.dto.ClienteCreateDTO;
 import br.univesp.pi.domain.dto.ClienteUpdateDTO;
+import br.univesp.pi.domain.dto.response.ClienteResponseDTO;
 import br.univesp.pi.domain.model.Cliente;
+import br.univesp.pi.exception.ApiIllegalArgumentException;
 import br.univesp.pi.repository.ClienteRepository;
 import br.univesp.pi.service.ClienteService;
-import jakarta.transaction.Transactional;
+import br.univesp.pi.util.MapperUtil;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +20,12 @@ public class ClienteServiceImpl implements ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    @Autowired
+    private MapperUtil mapperUtil;
+
     @Transactional
     @Override
-    public Cliente salvarCliente(ClienteCreateDTO dto) {
+    public ClienteResponseDTO salvarCliente(ClienteCreateDTO dto) {
         Cliente cliente = new Cliente();
         cliente.setCpfOuCnpj(dto.getCpfOuCnpj());
         cliente.setTipoPessoa(dto.getTipoPessoa());
@@ -27,35 +33,69 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setEmail(dto.getEmail());
         cliente.setTelefones(dto.getTelefones());
         cliente.setEndereco(dto.getEndereco());
-        return clienteRepository.save(cliente);
+
+        cliente = clienteRepository.save(cliente);
+
+        return mapperUtil.map(cliente, ClienteResponseDTO.class);
     }
 
     @Override
-    public List<Cliente> listarClientes() {
-        return clienteRepository.findAll();
+    public List<ClienteResponseDTO> listarClientes() {
+        List<Cliente> clientes = clienteRepository.findAll();
+        return mapperUtil.mapList(clientes, ClienteResponseDTO.class);
     }
 
     @Override
-    public Cliente buscarClientePorCpfOuCnpj(String cpfOuCnpj) {
-        return clienteRepository.findById(cpfOuCnpj).orElse(null);
+    public ClienteResponseDTO buscarClientePorCpfOuCnpj(String cpfOuCnpj) {
+        Cliente cliente = clienteRepository.findById(cpfOuCnpj)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
+                        "Cliente não encontrado com CPF/CNPJ: " + cpfOuCnpj,
+                        "Cliente",
+                        "cpfOuCnpj",
+                        cpfOuCnpj
+                ));
+        return mapperUtil.map(cliente, ClienteResponseDTO.class);
     }
 
     @Override
-    public List<Cliente> buscarClientePorNomeOuRazaoSocial(String nomeOuRazaoSocial) {
-        return clienteRepository.findByNomeOuRazaoSocialContainingIgnoreCase(nomeOuRazaoSocial);
+    public List<ClienteResponseDTO> buscarClientePorNomeOuRazaoSocial(String nomeOuRazaoSocial) {
+        List<Cliente> clientes = clienteRepository.findByNomeOuRazaoSocialContainingIgnoreCase(nomeOuRazaoSocial);
+        if (clientes.isEmpty()) {
+            throw new ApiIllegalArgumentException(
+                    "Nenhum cliente encontrado com o nome ou razão social: " + nomeOuRazaoSocial,
+                    "Cliente",
+                    "nomeOuRazaoSocial",
+                    nomeOuRazaoSocial
+            );
+        }
+        return mapperUtil.mapList(clientes, ClienteResponseDTO.class);
     }
 
     @Override
-    public List<Cliente> buscarClientePorEmail(String email) {
-        return clienteRepository.findByEmailContainingIgnoreCase(email);
+    public List<ClienteResponseDTO> buscarClientePorEmail(String email) {
+        List<Cliente> clientes = clienteRepository.findByEmailContainingIgnoreCase(email);
+        if (clientes.isEmpty()) {
+            throw new ApiIllegalArgumentException(
+                    "Nenhum cliente encontrado com o email: " + email,
+                    "Cliente",
+                    "email",
+                    email
+            );
+        }
+        return mapperUtil.mapList(clientes, ClienteResponseDTO.class);
     }
 
     @Transactional
     @Override
-    public Cliente atualizarCliente(String cpfOuCnpj, ClienteUpdateDTO dto) {
-        Cliente clienteExistente = buscarClientePorCpfOuCnpj(cpfOuCnpj);
+    public ClienteResponseDTO atualizarCliente(String cpfOuCnpj, ClienteUpdateDTO dto) {
+        Cliente clienteExistente = clienteRepository.findByCpfOuCnpj(cpfOuCnpj).orElse(null);
         if (clienteExistente == null) {
-            throw new IllegalArgumentException("Cliente não encontrado com CPF/CNPJ: " + cpfOuCnpj);
+            throw new ApiIllegalArgumentException(
+                    "Cliente não encontrado com CPF/CNPJ: " + cpfOuCnpj,
+                    "Cliente",
+                    "cpfOuCnpj",
+                    cpfOuCnpj
+            );
         }
 
         if (dto.getTipoPessoa() != null) {
@@ -78,7 +118,9 @@ public class ClienteServiceImpl implements ClienteService {
             clienteExistente.setEndereco(dto.getEndereco());
         }
 
-        return clienteRepository.save(clienteExistente);
+        Cliente saved = clienteRepository.save(clienteExistente);
+
+        return mapperUtil.map(saved, ClienteResponseDTO.class);
     }
 
     @Transactional

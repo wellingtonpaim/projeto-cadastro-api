@@ -4,6 +4,7 @@ import br.univesp.pi.security.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -51,17 +52,28 @@ public class WebSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**",
-                                         "/swagger-ui/**",
-                                         "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/auth/login", "/auth/confirmar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register")
+                        .hasRole("ADMINISTRADOR")
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/**")
+                        .hasAnyRole("USUARIO", "ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/**")
+                        .hasAnyRole("USUARIO", "ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/**")
+                        .hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.DELETE, "/**")
+                        .hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
                         new JWTAuthenticationFilter(customUserDetailsService),
                         UsernamePasswordAuthenticationFilter.class
+                )
+                .exceptionHandling(exc -> exc
+                        .authenticationEntryPoint(new JWTAuthenticationEntryPoint())
                 );
 
         return http.build();

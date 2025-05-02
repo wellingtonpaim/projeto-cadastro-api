@@ -2,7 +2,7 @@ package br.univesp.pi.controller;
 
 import br.univesp.pi.domain.dto.ClienteCreateDTO;
 import br.univesp.pi.domain.dto.ClienteUpdateDTO;
-import br.univesp.pi.domain.model.Cliente;
+import br.univesp.pi.domain.dto.response.ClienteResponseDTO;
 import br.univesp.pi.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,34 +19,34 @@ public class ClienteController {
     private ClienteService clienteService;
 
     @PostMapping
-    public ResponseEntity<Cliente> salvarCliente(@Valid @RequestBody ClienteCreateDTO clienteDTO) {
+    public ResponseEntity<ClienteResponseDTO> salvarCliente(@Valid @RequestBody ClienteCreateDTO clienteDTO) {
         return ResponseEntity.ok(clienteService.salvarCliente(clienteDTO));
     }
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> listarClientes() {
+    public ResponseEntity<List<ClienteResponseDTO>> listarClientes() {
         return ResponseEntity.ok(clienteService.listarClientes());
     }
 
     @GetMapping("/{cpfOuCnpj}")
-    public ResponseEntity<Cliente> buscarClientePorCpfOuCnpj(@PathVariable String cpfOuCnpj) {
+    public ResponseEntity<ClienteResponseDTO> buscarClientePorCpfOuCnpj(@PathVariable String cpfOuCnpj) {
         return ResponseEntity.ok(clienteService.buscarClientePorCpfOuCnpj(cpfOuCnpj));
     }
 
     @GetMapping("/nome/{nomeOuRazaoSocial}")
-    public ResponseEntity<List<Cliente>> buscarClientePorNome(@PathVariable String nomeOuRazaoSocial) {
-        List<Cliente> clientes = clienteService.buscarClientePorNomeOuRazaoSocial(nomeOuRazaoSocial);
+    public ResponseEntity<List<ClienteResponseDTO>> buscarClientePorNome(@PathVariable String nomeOuRazaoSocial) {
+        List<ClienteResponseDTO> clientes = clienteService.buscarClientePorNomeOuRazaoSocial(nomeOuRazaoSocial);
         return ResponseEntity.ok(clientes);
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<List<Cliente>> buscarClientePorEmail(@PathVariable String email) {
-        List<Cliente> clientes = clienteService.buscarClientePorEmail(email);
+    public ResponseEntity<List<ClienteResponseDTO>> buscarClientePorEmail(@PathVariable String email) {
+        List<ClienteResponseDTO> clientes = clienteService.buscarClientePorEmail(email);
         return ResponseEntity.ok(clientes);
     }
 
     @PutMapping("/{cpfOuCnpj}")
-    public ResponseEntity<Cliente> atualizarCliente(@PathVariable String cpfOuCnpj, @Valid @RequestBody ClienteUpdateDTO clienteDTO) {
+    public ResponseEntity<ClienteResponseDTO> atualizarCliente(@PathVariable String cpfOuCnpj, @Valid @RequestBody ClienteUpdateDTO clienteDTO) {
         return ResponseEntity.ok(clienteService.atualizarCliente(cpfOuCnpj, clienteDTO));
     }
 

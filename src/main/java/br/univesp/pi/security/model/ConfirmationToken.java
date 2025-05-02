@@ -16,7 +16,7 @@ public class ConfirmationToken {
     private String token;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
     private LocalDateTime expiryDate;
