@@ -24,10 +24,10 @@ TRUNCATE TABLE usuario CASCADE;
 SET session_replication_role = 'origin';
 
 -- Reinicia as sequences
-ALTER SEQUENCE familia_codigo_seq RESTART WITH 1;
-ALTER SEQUENCE produto_codigo_seq RESTART WITH 1;
-ALTER SEQUENCE servico_codigo_seq RESTART WITH 1;
-ALTER SEQUENCE usuario_id_seq RESTART WITH 1;
+-- ALTER SEQUENCE familia_codigo_seq RESTART WITH 1;
+-- ALTER SEQUENCE produto_codigo_seq RESTART WITH 1;
+-- ALTER SEQUENCE servico_codigo_seq RESTART WITH 1;
+-- ALTER SEQUENCE usuario_id_seq RESTART WITH 1;
 
 -- Inserção de Famílias (5 exemplos)
 INSERT INTO familia (nome) VALUES

@@ -1,16 +1,16 @@
 package br.univesp.pi.service;
 
 import br.univesp.pi.domain.dto.FamiliaDTO;
-import br.univesp.pi.domain.model.Familia;
+import br.univesp.pi.domain.dto.response.FamiliaResponseDTO;
 
 import java.util.List;
 
 public interface FamiliaService {
 
-    Familia salvarFamilia(FamiliaDTO familia);
-    List<Familia> listarFamilias();
-    Familia buscarFamiliaPorId(Long codigo);
+    FamiliaResponseDTO salvarFamilia(FamiliaDTO familia);
+    List<FamiliaResponseDTO> listarFamilias();
+    FamiliaResponseDTO buscarFamiliaPorId(Long codigo);
+    List<FamiliaResponseDTO> buscarPorNome(String nome);
+    FamiliaResponseDTO atualizarFamilia(Long codigo, FamiliaDTO familia);
     void deletarFamilia(Long codigo);
-    Familia atualizarFamilia(Long codigo, FamiliaDTO familia);
-    List<Familia> buscarPorNome(String nome);
 }

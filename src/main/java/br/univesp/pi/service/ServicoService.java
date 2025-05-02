@@ -2,16 +2,16 @@ package br.univesp.pi.service;
 
 import br.univesp.pi.domain.dto.ServicoCreateDTO;
 import br.univesp.pi.domain.dto.ServicoUpdateDTO;
-import br.univesp.pi.domain.model.Servico;
+import br.univesp.pi.domain.dto.response.ServicoResponseDTO;
 
 import java.util.List;
 
 public interface ServicoService {
 
-    Servico salvarServico(ServicoCreateDTO servico);
-    List<Servico> listarServicos();
-    Servico buscarServicoPorId(Long codigo);
+    ServicoResponseDTO salvarServico(ServicoCreateDTO servico);
+    List<ServicoResponseDTO> listarServicos();
+    ServicoResponseDTO buscarServicoPorId(Long codigo);
+    List<ServicoResponseDTO> buscarServicosPorClienteId(String cpfOuCnpj);
+    ServicoResponseDTO atualizarServico(Long codigo, ServicoUpdateDTO servico);
     void deletarServico(Long codigo);
-    Servico atualizarServico(Long codigo, ServicoUpdateDTO servico);
-    List<Servico> buscarServicosPorClienteId(String cpfOuCnpj);
 }

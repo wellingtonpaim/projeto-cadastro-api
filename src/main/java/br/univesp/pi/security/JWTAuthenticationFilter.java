@@ -43,9 +43,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 if (username != null) {
                     // Carrega as roles do usuário
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    Authentication auth = new UsernamePasswordAuthenticationToken(
-                            username, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (JWTVerificationException e) {
                 logger.debug("Token inválido: " + e.getMessage());

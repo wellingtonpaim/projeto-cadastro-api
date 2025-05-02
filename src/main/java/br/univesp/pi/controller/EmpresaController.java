@@ -2,7 +2,7 @@ package br.univesp.pi.controller;
 
 import br.univesp.pi.domain.dto.EmpresaCreateDTO;
 import br.univesp.pi.domain.dto.EmpresaUpdateDTO;
-import br.univesp.pi.domain.model.Empresa;
+import br.univesp.pi.domain.dto.response.EmpresaResponseDTO;
 import br.univesp.pi.service.EmpresaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,22 +18,22 @@ public class EmpresaController {
     private EmpresaService empresaService;
 
     @PostMapping
-    public Empresa salvarEmpresa(@Valid @RequestBody EmpresaCreateDTO empresa) {
+    public EmpresaResponseDTO salvarEmpresa(@Valid @RequestBody EmpresaCreateDTO empresa) {
         return empresaService.salvarEmpresa(empresa);
     }
 
     @GetMapping
-    public List<Empresa> listarEmpresas() {
+    public List<EmpresaResponseDTO> listarEmpresas() {
         return empresaService.listarEmpresas();
     }
 
     @GetMapping("/{id}")
-    public Empresa buscarEmpresaPorId(@PathVariable Long id) {
+    public EmpresaResponseDTO buscarEmpresaPorId(@PathVariable Long id) {
         return empresaService.buscarEmpresasPorId(id);
     }
 
     @PutMapping("/{id}")
-    public Empresa atualizarEmpresa(@PathVariable Long id, @Valid @RequestBody EmpresaUpdateDTO empresa) {
+    public EmpresaResponseDTO atualizarEmpresa(@PathVariable Long id, @Valid @RequestBody EmpresaUpdateDTO empresa) {
         return empresaService.atualizarEmpresa(id, empresa);
     }
 

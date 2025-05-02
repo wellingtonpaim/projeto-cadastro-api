@@ -1,10 +1,13 @@
 package br.univesp.pi.service.impl;
 
 import br.univesp.pi.domain.dto.FamiliaDTO;
+import br.univesp.pi.domain.dto.response.FamiliaResponseDTO;
 import br.univesp.pi.domain.model.Familia;
+import br.univesp.pi.exception.ApiIllegalArgumentException;
 import br.univesp.pi.repository.FamiliaRepository;
 import br.univesp.pi.service.FamiliaService;
-import jakarta.transaction.Transactional;
+import br.univesp.pi.util.MapperUtil;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,36 +19,62 @@ public class FamiliaServiceImpl implements FamiliaService {
     @Autowired
     private FamiliaRepository familiaRepository;
 
+    @Autowired
+    private MapperUtil mapperUtil;
+
     @Transactional
     @Override
-    public Familia salvarFamilia(FamiliaDTO dto) {
+    public FamiliaResponseDTO salvarFamilia(FamiliaDTO dto) {
         Familia familia = new Familia();
         familia.setNome(dto.getNome());
-        return familiaRepository.save(familia);
+
+        Familia saved = familiaRepository.save(familia);
+
+        return mapperUtil.map(saved, FamiliaResponseDTO.class);
     }
 
     @Override
-    public List<Familia> listarFamilias() {
-        return familiaRepository.findAll();
+    public List<FamiliaResponseDTO> listarFamilias() {
+        List<Familia> familias = familiaRepository.findAll();
+        return mapperUtil.mapList(familias, FamiliaResponseDTO.class);
     }
 
     @Override
-    public Familia buscarFamiliaPorId(Long codigo) {
-        return familiaRepository.findById(codigo).orElse(null);
+    public FamiliaResponseDTO buscarFamiliaPorId(Long codigo) {
+        Familia familia = familiaRepository.findById(codigo)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
+                        "Família não encontrada com ID: " + codigo,
+                        "Família",
+                        "codigo",
+                        codigo.toString()
+                ));
+        return mapperUtil.map(familia, FamiliaResponseDTO.class);
     }
 
     @Override
-    public List<Familia> buscarPorNome(String nome) {
-        return familiaRepository.findByNomeContainingIgnoreCase(nome);
+    public List<FamiliaResponseDTO> buscarPorNome(String nome) {
+        List<Familia> familias = familiaRepository.findByNomeContainingIgnoreCase(nome);
+        if (familias == null || familias.isEmpty()) {
+            throw new ApiIllegalArgumentException(
+                    "Nenhuma família encontrada com nome contendo: " + nome,
+                    "Família",
+                    "nome",
+                    nome
+            );
+        }
+        return mapperUtil.mapList(familias, FamiliaResponseDTO.class);
     }
 
     @Transactional
     @Override
-    public Familia atualizarFamilia(Long codigo, FamiliaDTO dto) {
+    public FamiliaResponseDTO atualizarFamilia(Long codigo, FamiliaDTO dto) {
         Familia familiaExistente = familiaRepository.findById(codigo).orElse(null);
         if (familiaExistente != null) {
             familiaExistente.setNome(dto.getNome());
-            return familiaRepository.save(familiaExistente);
+
+           Familia saved = familiaRepository.save(familiaExistente);
+
+            return mapperUtil.map(saved, FamiliaResponseDTO.class);
         }
         return null;
     }

@@ -2,6 +2,7 @@ package br.univesp.pi.controller;
 
 import br.univesp.pi.domain.dto.ProdutoCreateDTO;
 import br.univesp.pi.domain.dto.ProdutoUpdateDTO;
+import br.univesp.pi.domain.dto.response.ProdutoResponseDTO;
 import br.univesp.pi.domain.model.Produto;
 import br.univesp.pi.service.ProdutoService;
 import jakarta.validation.Valid;
@@ -19,41 +20,41 @@ public class ProdutoController {
     private ProdutoService produtoService;
 
     @PostMapping
-    public ResponseEntity<Produto> salvarProduto(@Valid @RequestBody ProdutoCreateDTO produto) {
-        Produto produtoSalvo = produtoService.salvarProduto(produto);
+    public ResponseEntity<ProdutoResponseDTO> salvarProduto(@Valid @RequestBody ProdutoCreateDTO produto) {
+        ProdutoResponseDTO produtoSalvo = produtoService.salvarProduto(produto);
         return ResponseEntity.ok(produtoSalvo);
     }
 
     @GetMapping
-    public ResponseEntity<List<Produto>> listarProdutos() {
-        List<Produto> produtos = produtoService.listarProdutos();
+    public ResponseEntity<List<ProdutoResponseDTO>> listarProdutos() {
+        List<ProdutoResponseDTO> produtos = produtoService.listarProdutos();
         return ResponseEntity.ok(produtos);
     }
 
     @GetMapping("/{codigo}")
-    public ResponseEntity<Produto> buscarProdutoPorCodigo(@PathVariable Long codigo) {
-        Produto produto = produtoService.buscarProdutoPorCodigo(codigo);
+    public ResponseEntity<ProdutoResponseDTO> buscarProdutoPorCodigo(@PathVariable Long codigo) {
+        ProdutoResponseDTO produto = produtoService.buscarProdutoPorCodigo(codigo);
         return ResponseEntity.ok(produto);
     }
 
     @GetMapping("/nome/{nome}")
-    public ResponseEntity<List<Produto>> buscarPorNome(@PathVariable String nome) {
+    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorNome(@PathVariable String nome) {
         return ResponseEntity.ok(produtoService.buscarPorNome(nome));
     }
 
     @GetMapping("/descricao/{descricao}")
-    public ResponseEntity<List<Produto>> buscarPorDescricao(@PathVariable String descricao) {
+    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorDescricao(@PathVariable String descricao) {
         return ResponseEntity.ok(produtoService.buscarPorDescricao(descricao));
     }
 
     @GetMapping("/familia/{codigoFamilia}")
-    public ResponseEntity<List<Produto>> buscarPorFamilia(@PathVariable Long codigoFamilia) {
+    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorFamilia(@PathVariable Long codigoFamilia) {
         return ResponseEntity.ok(produtoService.buscarPorFamilia(codigoFamilia));
     }
 
     @PutMapping("/{codigo}")
-    public ResponseEntity<Produto> atualizarProduto(@PathVariable Long codigo, @Valid @RequestBody ProdutoUpdateDTO produto) {
-        Produto produtoAtualizado = produtoService.atualizarProduto(codigo, produto);
+    public ResponseEntity<ProdutoResponseDTO> atualizarProduto(@PathVariable Long codigo, @Valid @RequestBody ProdutoUpdateDTO produto) {
+        ProdutoResponseDTO produtoAtualizado = produtoService.atualizarProduto(codigo, produto);
         return ResponseEntity.ok(produtoAtualizado);
     }
 

@@ -2,15 +2,17 @@ package br.univesp.pi.service.impl;
 
 import br.univesp.pi.domain.dto.EmpresaCreateDTO;
 import br.univesp.pi.domain.dto.EmpresaUpdateDTO;
+import br.univesp.pi.domain.dto.response.EmpresaResponseDTO;
 import br.univesp.pi.domain.model.Empresa;
+import br.univesp.pi.exception.ApiIllegalArgumentException;
 import br.univesp.pi.repository.EmpresaRepository;
 import br.univesp.pi.service.EmpresaService;
-import jakarta.transaction.Transactional;
+import br.univesp.pi.util.MapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EmpresaServiceImpl implements EmpresaService {
@@ -18,9 +20,12 @@ public class EmpresaServiceImpl implements EmpresaService {
     @Autowired
     private EmpresaRepository empresaRepository;
 
+    @Autowired
+    private MapperUtil mapperUtil;
+
     @Transactional
     @Override
-    public Empresa salvarEmpresa(EmpresaCreateDTO dto) {
+    public EmpresaResponseDTO salvarEmpresa(EmpresaCreateDTO dto) {
         Empresa empresa = new Empresa();
         empresa.setRazaoSocial(dto.getRazaoSocial());
         empresa.setEndereco(dto.getEndereco());
@@ -30,27 +35,40 @@ public class EmpresaServiceImpl implements EmpresaService {
         empresa.setEmail(dto.getEmail());
         empresa.setSite(dto.getSite());
         empresa.setLogotipoPath(dto.getLogotipoPath());
-        return empresaRepository.save(empresa);
+
+        Empresa saved = empresaRepository.save(empresa);
+
+        return mapperUtil.map(saved, EmpresaResponseDTO.class);
     }
 
     @Override
-    public List<Empresa> listarEmpresas() {
-        return empresaRepository.findAll();
+    public List<EmpresaResponseDTO> listarEmpresas() {
+        List<Empresa> empresas = empresaRepository.findAll();
+        return mapperUtil.mapList(empresas, EmpresaResponseDTO.class);
     }
 
     @Override
-    public Empresa buscarEmpresasPorId(Long id) {
-        return empresaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+    public EmpresaResponseDTO buscarEmpresasPorId(Long id) {
+        Empresa empresa = empresaRepository.findById(id)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
+                        "Empresa não encontrada com ID: " + id,
+                        "Empresa",
+                        "id",
+                        id.toString()
+                ));
+        return mapperUtil.map(empresa, EmpresaResponseDTO.class);
     }
 
     @Transactional
     @Override
-    public Empresa atualizarEmpresa(Long id, EmpresaUpdateDTO dto) {
-        Optional<Empresa> empresaOptional = empresaRepository.findById(id);
-        if (empresaOptional.isEmpty()) return null;
-
-        Empresa empresa = empresaOptional.get();
+    public EmpresaResponseDTO atualizarEmpresa(Long id, EmpresaUpdateDTO dto) {
+        Empresa empresa = empresaRepository.findById(id)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
+                        "Empresa não encontrada com ID: " + id,
+                        "Empresa",
+                        "id",
+                        id.toString()
+                ));
 
         if (dto.getRazaoSocial() != null) empresa.setRazaoSocial(dto.getRazaoSocial());
         if (dto.getEndereco() != null) empresa.setEndereco(dto.getEndereco());
@@ -61,14 +79,21 @@ public class EmpresaServiceImpl implements EmpresaService {
         if (dto.getSite() != null) empresa.setSite(dto.getSite());
         if (dto.getLogotipoPath() != null) empresa.setLogotipoPath(dto.getLogotipoPath());
 
-        return empresaRepository.save(empresa);
+        Empresa saved = empresaRepository.save(empresa);
+
+        return mapperUtil.map(saved, EmpresaResponseDTO.class);
     }
 
     @Transactional
     @Override
     public void excluirEmpresa(Long id) {
         if (!empresaRepository.existsById(id)) {
-            throw new RuntimeException("Empresa não encontrada");
+            throw new ApiIllegalArgumentException(
+                    "Empresa não encontrada com ID: " + id,
+                    "Empresa",
+                    "id",
+                    id.toString()
+            );
         }
         empresaRepository.deleteById(id);
     }

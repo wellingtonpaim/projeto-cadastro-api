@@ -7,12 +7,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 @Getter
 public class UserDetailsImpl implements UserDetails {
 
-    // Metodo útil para acessar a entidade Usuario quando necessário
     private final Usuario usuario;
 
     public UserDetailsImpl(Usuario usuario) {
@@ -21,40 +20,38 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Converte a CategoriaUsuario para GrantedAuthority (ROLE_ADMINISTRADOR ou ROLE_USUARIO)
-        return Collections.singletonList(
-                new SimpleGrantedAuthority(usuario.getCategoria().getRole())
-        );
+        // Atribui a role baseada na categoria do usuário
+        String role = usuario.getCategoria().getRole(); // Ex: ROLE_ADMINISTRADOR
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
     @Override
     public String getPassword() {
-        return usuario.getSenha(); // Deve estar criptografada
+        return usuario.getSenha(); // A senha deve estar criptografada com BCrypt
     }
 
     @Override
     public String getUsername() {
-        return usuario.getEmail(); // Ou usuario.getEmail() conforme seu fluxo de login
+        return usuario.getEmail(); // O email está sendo usado como identificador de login
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Pode implementar lógica de expiração se necessário
+        return true; // Pode mudar se implementar lógica de expiração
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // Pode implementar bloqueio de conta
+        return usuario.isAtivo(); // Considera inativo como conta bloqueada
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Pode implementar expiração de credenciais
+        return true; // Pode mudar se quiser expirar senhas antigas
     }
 
     @Override
     public boolean isEnabled() {
-        return usuario.isAtivo(); // Controle de conta ativada por email
+        return usuario.isAtivo(); // Ativo após confirmação de email, por exemplo
     }
-
 }
