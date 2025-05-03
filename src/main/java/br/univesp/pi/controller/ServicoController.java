@@ -2,8 +2,8 @@ package br.univesp.pi.controller;
 
 import br.univesp.pi.domain.dto.ServicoCreateDTO;
 import br.univesp.pi.domain.dto.ServicoUpdateDTO;
+import br.univesp.pi.domain.dto.response.ApiResponse;
 import br.univesp.pi.domain.dto.response.ServicoResponseDTO;
-import br.univesp.pi.domain.model.Servico;
 import br.univesp.pi.service.ServicoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,39 +20,40 @@ public class ServicoController {
     private ServicoService servicoService;
 
     @PostMapping
-    public ResponseEntity<ServicoResponseDTO> salvarServico(@Valid @RequestBody ServicoCreateDTO servico) {
+    public ResponseEntity<ApiResponse<ServicoResponseDTO>> salvarServico(@Valid @RequestBody ServicoCreateDTO servico) {
         ServicoResponseDTO servicoSalvo = servicoService.salvarServico(servico);
-        return ResponseEntity.ok(servicoSalvo);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Serviço salvo com sucesso", servicoSalvo));
     }
 
     @GetMapping
-    public ResponseEntity<List<ServicoResponseDTO>> listarServicos() {
+    public ResponseEntity<ApiResponse<List<ServicoResponseDTO>>> listarServicos() {
         List<ServicoResponseDTO> servicos = servicoService.listarServicos();
-        return ResponseEntity.ok(servicos);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Serviços listados com sucesso", servicos));
     }
 
     @GetMapping("/{codigo}")
-    public ResponseEntity<ServicoResponseDTO> buscarServicoPorId(@PathVariable Long codigo) {
+    public ResponseEntity<ApiResponse<ServicoResponseDTO>> buscarServicoPorId(@PathVariable Long codigo) {
         ServicoResponseDTO servico = servicoService.buscarServicoPorId(codigo);
-        return ResponseEntity.ok(servico);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Serviço encontrado", servico));
     }
 
     @GetMapping("/cliente/{cpfOuCnpj}")
-    public ResponseEntity<List<ServicoResponseDTO>> buscarServicosPorCliente(@PathVariable String cpfOuCnpj) {
+    public ResponseEntity<ApiResponse<List<ServicoResponseDTO>>> buscarServicosPorCliente(@PathVariable String cpfOuCnpj) {
         List<ServicoResponseDTO> servicos = servicoService.buscarServicosPorClienteId(cpfOuCnpj);
-        return ResponseEntity.ok(servicos);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Serviços encontrados para o cliente", servicos));
     }
 
     @PutMapping("/{codigo}")
-    public ResponseEntity<ServicoResponseDTO> atualizarServico(@PathVariable Long codigo, @Valid @RequestBody ServicoUpdateDTO servico) {
+    public ResponseEntity<ApiResponse<ServicoResponseDTO>> atualizarServico(
+            @PathVariable Long codigo,
+            @Valid @RequestBody ServicoUpdateDTO servico) {
         ServicoResponseDTO servicoAtualizado = servicoService.atualizarServico(codigo, servico);
-        return ResponseEntity.ok(servicoAtualizado);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Serviço atualizado com sucesso", servicoAtualizado));
     }
 
     @DeleteMapping("/{codigo}")
-    public ResponseEntity<Void> deletarServico(@PathVariable Long codigo) {
+    public ResponseEntity<ApiResponse<Void>> deletarServico(@PathVariable Long codigo) {
         servicoService.deletarServico(codigo);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Serviço deletado com sucesso", null));
     }
-
 }

@@ -2,8 +2,8 @@ package br.univesp.pi.controller;
 
 import br.univesp.pi.domain.dto.FornecedorCreateDTO;
 import br.univesp.pi.domain.dto.FornecedorUpdateDTO;
+import br.univesp.pi.domain.dto.response.ApiResponse;
 import br.univesp.pi.domain.dto.response.FornecedorResponseDTO;
-import br.univesp.pi.domain.model.Fornecedor;
 import br.univesp.pi.service.FornecedorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,48 +13,54 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/fornecedore")
+@RequestMapping("/fornecedor")
 public class FornecedorController {
 
     @Autowired
     private FornecedorService fornecedorService;
 
     @PostMapping
-    public ResponseEntity<FornecedorResponseDTO> salvarFornecedor(@Valid @RequestBody FornecedorCreateDTO fornecedorDTO) {
-        return ResponseEntity.ok(fornecedorService.salvarFornecedor(fornecedorDTO));
+    public ResponseEntity<ApiResponse<FornecedorResponseDTO>> salvarFornecedor(@Valid @RequestBody FornecedorCreateDTO fornecedorDTO) {
+        FornecedorResponseDTO fornecedor = fornecedorService.salvarFornecedor(fornecedorDTO);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Fornecedor salvo com sucesso", fornecedor));
     }
 
     @GetMapping
-    public ResponseEntity<List<FornecedorResponseDTO>> listarFornecedores() {
-        return ResponseEntity.ok(fornecedorService.listarFornecedores());
+    public ResponseEntity<ApiResponse<List<FornecedorResponseDTO>>> listarFornecedores() {
+        List<FornecedorResponseDTO> fornecedores = fornecedorService.listarFornecedores();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Fornecedores listados com sucesso", fornecedores));
     }
 
     @GetMapping("/{cpfOuCnpj}")
-    public ResponseEntity<FornecedorResponseDTO> buscarFornecedorPorCpfOuCnpj(@PathVariable String cpfOuCnpj) {
-        return ResponseEntity.ok(fornecedorService.buscarFornecedorPorCpfOuCnpj(cpfOuCnpj));
+    public ResponseEntity<ApiResponse<FornecedorResponseDTO>> buscarFornecedorPorCpfOuCnpj(@PathVariable String cpfOuCnpj) {
+        FornecedorResponseDTO fornecedor = fornecedorService.buscarFornecedorPorCpfOuCnpj(cpfOuCnpj);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Fornecedor encontrado", fornecedor));
     }
 
     @GetMapping("/nome/{nomeOuRazaoSocial}")
-    public ResponseEntity<List<FornecedorResponseDTO>> buscarFornecedorPorNome(@PathVariable String nomeOuRazaoSocial) {
+    public ResponseEntity<ApiResponse<List<FornecedorResponseDTO>>> buscarFornecedorPorNome(@PathVariable String nomeOuRazaoSocial) {
         List<FornecedorResponseDTO> fornecedores = fornecedorService.buscarFornecedorPorNomeOuRazaoSocial(nomeOuRazaoSocial);
-        return ResponseEntity.ok(fornecedores);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Fornecedores encontrados por nome", fornecedores));
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<List<FornecedorResponseDTO>> buscarFornecedorPorEmail(@PathVariable String email) {
+    public ResponseEntity<ApiResponse<List<FornecedorResponseDTO>>> buscarFornecedorPorEmail(@PathVariable String email) {
         List<FornecedorResponseDTO> fornecedores = fornecedorService.buscarFornecedorPorEmail(email);
-        return ResponseEntity.ok(fornecedores);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Fornecedores encontrados por e-mail", fornecedores));
     }
 
     @PutMapping("/{cpfOuCnpj}")
-    public ResponseEntity<FornecedorResponseDTO> atualizarFornecedor(@PathVariable String cpfOuCnpj, @Valid @RequestBody FornecedorUpdateDTO fornecedorDTO) {
-        return ResponseEntity.ok(fornecedorService.atualizarFornecedor(cpfOuCnpj, fornecedorDTO));
+    public ResponseEntity<ApiResponse<FornecedorResponseDTO>> atualizarFornecedor(
+            @PathVariable String cpfOuCnpj,
+            @Valid @RequestBody FornecedorUpdateDTO fornecedorDTO) {
+        FornecedorResponseDTO fornecedorAtualizado = fornecedorService.atualizarFornecedor(cpfOuCnpj, fornecedorDTO);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Fornecedor atualizado com sucesso", fornecedorAtualizado));
     }
 
     @DeleteMapping("/{cpfOuCnpj}")
-    public ResponseEntity<Void> deletarFornecedor(@PathVariable String cpfOuCnpj) {
+    public ResponseEntity<ApiResponse<Void>> deletarFornecedor(@PathVariable String cpfOuCnpj) {
         fornecedorService.deletarFornecedor(cpfOuCnpj);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Fornecedor deletado com sucesso", null));
     }
 }
 

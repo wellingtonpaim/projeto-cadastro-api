@@ -2,10 +2,8 @@ package br.univesp.pi.service.impl;
 
 import br.univesp.pi.domain.dto.ServicoCreateDTO;
 import br.univesp.pi.domain.dto.ServicoUpdateDTO;
-import br.univesp.pi.domain.dto.response.FamiliaResponseDTO;
 import br.univesp.pi.domain.dto.response.ServicoResponseDTO;
 import br.univesp.pi.domain.model.Cliente;
-import br.univesp.pi.domain.model.Familia;
 import br.univesp.pi.domain.model.Produto;
 import br.univesp.pi.domain.model.Servico;
 import br.univesp.pi.enumeration.TipoDesconto;
@@ -15,9 +13,10 @@ import br.univesp.pi.repository.ProdutoRepository;
 import br.univesp.pi.repository.ServicoRepository;
 import br.univesp.pi.service.ServicoService;
 import br.univesp.pi.util.MapperUtil;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -46,7 +45,8 @@ public class ServicoServiceImpl implements ServicoService {
                         "Cliente não encontrado",
                         "Cliente",
                         "cpfOuCnpj",
-                        dto.getCliente()
+                        dto.getCliente(),
+                        HttpStatus.NOT_FOUND
                 ));
 
         List<Produto> produtos = produtoRepository.findAllById(dto.getProdutos());
@@ -58,8 +58,8 @@ public class ServicoServiceImpl implements ServicoService {
         servico.setDesconto(dto.getDesconto());
 
         calcularTotais(servico);
-        Servico saved = servicoRepository.save(servico);
 
+        Servico saved = servicoRepository.save(servico);
         return mapperUtil.map(saved, ServicoResponseDTO.class);
     }
 
@@ -71,15 +71,15 @@ public class ServicoServiceImpl implements ServicoService {
 
     @Override
     public ServicoResponseDTO buscarServicoPorId(Long codigo) {
-        Servico servico = servicoRepository.findById(codigo).orElse(null);
-        if (servico == null) {
-            throw new ApiIllegalArgumentException(
+        Servico servico = servicoRepository.findById(codigo)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
                     "Serviço não encontrado com o código: " + codigo,
                     "Servico",
                     "codigo",
-                    String.valueOf(codigo)
-            );
-        }
+                    String.valueOf(codigo),
+                    HttpStatus.NOT_FOUND
+            ));
+
         return mapperUtil.map(servico, ServicoResponseDTO.class);
     }
 
@@ -91,7 +91,8 @@ public class ServicoServiceImpl implements ServicoService {
                     "Nenhum serviço encontrado para o cliente com CPF/CNPJ: " + cpfOuCnpj,
                     "Servico",
                     "cpfOuCnpj",
-                    cpfOuCnpj
+                    cpfOuCnpj,
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(servicos, ServicoResponseDTO.class);
@@ -105,7 +106,8 @@ public class ServicoServiceImpl implements ServicoService {
                         "Serviço não encontrado",
                         "Servico",
                         "codigo",
-                        String.valueOf(codigo)
+                        String.valueOf(codigo),
+                        HttpStatus.NOT_FOUND
                 ));
 
         if (dto.getCliente() != null) {
@@ -114,7 +116,8 @@ public class ServicoServiceImpl implements ServicoService {
                             "Cliente não encontrado",
                             "Cliente",
                             "cpfOuCnpj",
-                            dto.getCliente()
+                            dto.getCliente(),
+                            HttpStatus.NOT_FOUND
                     ));
             servicoExistente.setCliente(cliente);
         }
@@ -130,7 +133,8 @@ public class ServicoServiceImpl implements ServicoService {
                     "Um ou mais produtos não foram encontrados",
                     "Produto",
                     "ids",
-                    codigosProdutos.toString()
+                    codigosProdutos.toString(),
+                    HttpStatus.NOT_FOUND
             );
         }
         servicoExistente.setProdutos(produtos);
@@ -140,14 +144,23 @@ public class ServicoServiceImpl implements ServicoService {
         }
 
         calcularTotais(servicoExistente);
-        Servico atualizado = servicoRepository.save(servicoExistente);
 
+        Servico atualizado = servicoRepository.save(servicoExistente);
         return mapperUtil.map(atualizado, ServicoResponseDTO.class);
     }
 
     @Transactional
     @Override
     public void deletarServico(Long codigo) {
+        if (!servicoRepository.existsById(codigo)) {
+            throw new ApiIllegalArgumentException(
+                    "Não foi possível deletar. Serviço não encontrado com codigo: " + codigo,
+                    "Servico",
+                    "codigo",
+                    codigo,
+                    HttpStatus.NOT_FOUND
+            );
+        }
         servicoRepository.deleteById(codigo);
     }
 

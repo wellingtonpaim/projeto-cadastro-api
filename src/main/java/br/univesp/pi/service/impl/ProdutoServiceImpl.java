@@ -12,6 +12,7 @@ import br.univesp.pi.repository.FornecedorRepository;
 import br.univesp.pi.repository.ProdutoRepository;
 import br.univesp.pi.service.ProdutoService;
 import br.univesp.pi.util.MapperUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,18 +39,26 @@ public class ProdutoServiceImpl implements ProdutoService {
     @Override
     public ProdutoResponseDTO salvarProduto(@Valid ProdutoCreateDTO dto) {
 
-        Fornecedor fornecedor = validarEObterFornecedor(dto.getFornecedor());
+        Fornecedor fornecedor = null;
+        if (dto.getFornecedor() != null) {
+            fornecedor = fornecedorRepository.findByCpfOuCnpj(dto.getFornecedor())
+                    .orElseThrow(() -> new ApiIllegalArgumentException(
+                            "Não existe fornecedor cadastrado com o CPF/CNPJ: " + dto.getFornecedor(),
+                            "Fornecedor",
+                            "cpfCnpj",
+                            dto.getDescricao(),
+                            HttpStatus.NOT_FOUND
+                    ));
+        }
 
-        Familia familia = null;
-        if (dto.getFamilia() != null) {
-            familia = familiaRepository.findById(dto.getFamilia())
+        Familia familia = familiaRepository.findById(dto.getFamilia())
                     .orElseThrow(() -> new ApiIllegalArgumentException(
                             "Família de produtos não encontrada",
                             "Família",
                             "codigo",
-                            dto.getFamilia()
+                            dto.getFamilia(),
+                            HttpStatus.NOT_FOUND
                     ));
-        }
 
         Produto produto = new Produto();
         produto.setFamilia(familia);
@@ -59,7 +68,6 @@ public class ProdutoServiceImpl implements ProdutoService {
         produto.setFornecedor(fornecedor);
 
         Produto saved = produtoRepository.save(produto);
-
         return mapperUtil.map(saved, ProdutoResponseDTO.class);
     }
 
@@ -71,15 +79,15 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Override
     public ProdutoResponseDTO buscarProdutoPorCodigo(Long codigo) {
-        Produto produto = produtoRepository.findByCodigo(codigo).orElse(null);
-        if (produto == null) {
-            throw new ApiIllegalArgumentException(
+        Produto produto = produtoRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
                     "Produto não encontrado com código: " + codigo,
                     "Produto",
                     "codigo",
-                    String.valueOf(codigo)
-            );
-        }
+                    String.valueOf(codigo),
+                    HttpStatus.NOT_FOUND
+            ));
+
         return mapperUtil.map(produto, ProdutoResponseDTO.class);
     }
 
@@ -91,7 +99,8 @@ public class ProdutoServiceImpl implements ProdutoService {
                     "Nenhum produto encontrado com nome contendo: " + nome,
                     "Produto",
                     "nome",
-                    nome
+                    nome,
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(produtos, ProdutoResponseDTO.class);
@@ -105,7 +114,8 @@ public class ProdutoServiceImpl implements ProdutoService {
                     "Nenhum produto encontrado com descrição contendo: " + descricao,
                     "Produto",
                     "descricao",
-                    descricao
+                    descricao,
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(produtos, ProdutoResponseDTO.class);
@@ -119,7 +129,8 @@ public class ProdutoServiceImpl implements ProdutoService {
                     "Nenhum produto encontrado para a família com código: " + codigoFamilia,
                     "Produto",
                     "codigoFamilia",
-                    String.valueOf(codigoFamilia)
+                    String.valueOf(codigoFamilia),
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(produtos, ProdutoResponseDTO.class);
@@ -128,14 +139,14 @@ public class ProdutoServiceImpl implements ProdutoService {
     @Transactional
     @Override
     public ProdutoResponseDTO atualizarProduto(Long codigo, ProdutoUpdateDTO produtoCreateDTO) {
-        Produto produtoExistente = produtoRepository.findById(codigo).orElseThrow(
-                () -> new ApiIllegalArgumentException(
+        Produto produtoExistente = produtoRepository.findById(codigo)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
                         "Produto não encontrado com código: " + codigo,
                         "Produto",
                         "codigo",
-                        codigo
-                )
-        );
+                        codigo,
+                        HttpStatus.NOT_FOUND
+                ));
 
         if (produtoCreateDTO.getNome() != null) {
             produtoExistente.setNome(produtoCreateDTO.getNome());
@@ -155,7 +166,8 @@ public class ProdutoServiceImpl implements ProdutoService {
                             "Fornecedor não encontrado com CPF/CNPJ: " + produtoCreateDTO.getFornecedor(),
                             "Fornecedor",
                             "cpfCnpj",
-                            produtoCreateDTO.getFornecedor()
+                            produtoCreateDTO.getFornecedor(),
+                            HttpStatus.NOT_FOUND
                     ));
             produtoExistente.setFornecedor(fornecedor);
         }
@@ -166,30 +178,28 @@ public class ProdutoServiceImpl implements ProdutoService {
                             "Família não encontrada",
                             "Família",
                             "codigo",
-                            produtoCreateDTO.getFamilia()
+                            produtoCreateDTO.getFamilia(),
+                            HttpStatus.NOT_FOUND
                     ));
             produtoExistente.setFamilia(familia);
         }
 
         Produto saved = produtoRepository.save(produtoExistente);
-
         return mapperUtil.map(saved, ProdutoResponseDTO.class);
     }
 
     @Transactional
     @Override
     public void deletarProduto(Long codigo) {
+        if (!produtoRepository.existsById(codigo)) {
+            throw new ApiIllegalArgumentException(
+                    "Produto não encontrado com código: " + codigo,
+                    "Produto",
+                    "codigo",
+                    codigo,
+                    HttpStatus.NOT_FOUND
+            );
+        }
         produtoRepository.deleteById(codigo);
     }
-
-    private Fornecedor validarEObterFornecedor(String cpfCnpj) {
-        return fornecedorRepository.findByCpfOuCnpj(cpfCnpj)
-                .orElseThrow(() -> new ApiIllegalArgumentException(
-                        "Não existe fornecedor cadastrado com o CPF/CNPJ: " + cpfCnpj,
-                        "Fornecedor",
-                        "cpfCnpj",
-                        cpfCnpj
-                ));
-    }
-
 }

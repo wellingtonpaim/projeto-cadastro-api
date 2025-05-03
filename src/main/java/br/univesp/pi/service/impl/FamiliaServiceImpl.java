@@ -7,6 +7,7 @@ import br.univesp.pi.exception.ApiIllegalArgumentException;
 import br.univesp.pi.repository.FamiliaRepository;
 import br.univesp.pi.service.FamiliaService;
 import br.univesp.pi.util.MapperUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,6 @@ public class FamiliaServiceImpl implements FamiliaService {
         familia.setNome(dto.getNome());
 
         Familia saved = familiaRepository.save(familia);
-
         return mapperUtil.map(saved, FamiliaResponseDTO.class);
     }
 
@@ -46,7 +46,8 @@ public class FamiliaServiceImpl implements FamiliaService {
                         "Família não encontrada com ID: " + codigo,
                         "Família",
                         "codigo",
-                        codigo.toString()
+                        codigo.toString(),
+                        HttpStatus.NOT_FOUND
                 ));
         return mapperUtil.map(familia, FamiliaResponseDTO.class);
     }
@@ -59,7 +60,8 @@ public class FamiliaServiceImpl implements FamiliaService {
                     "Nenhuma família encontrada com nome contendo: " + nome,
                     "Família",
                     "nome",
-                    nome
+                    nome,
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(familias, FamiliaResponseDTO.class);
@@ -68,20 +70,33 @@ public class FamiliaServiceImpl implements FamiliaService {
     @Transactional
     @Override
     public FamiliaResponseDTO atualizarFamilia(Long codigo, FamiliaDTO dto) {
-        Familia familiaExistente = familiaRepository.findById(codigo).orElse(null);
-        if (familiaExistente != null) {
-            familiaExistente.setNome(dto.getNome());
+        Familia familiaExistente = familiaRepository.findById(codigo)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
+                    "Família não encontrada com ID: " + codigo,
+                    "Família",
+                    "codigo",
+                    codigo.toString(),
+                    HttpStatus.NOT_FOUND
+                ));
 
-           Familia saved = familiaRepository.save(familiaExistente);
+        familiaExistente.setNome(dto.getNome());
 
-            return mapperUtil.map(saved, FamiliaResponseDTO.class);
-        }
-        return null;
+        Familia saved = familiaRepository.save(familiaExistente);
+        return mapperUtil.map(saved, FamiliaResponseDTO.class);
     }
 
     @Transactional
     @Override
     public void deletarFamilia(Long codigo) {
+        if (!familiaRepository.existsById(codigo)) {
+            throw new ApiIllegalArgumentException(
+                    "Não foi possível deletar. Família não encontrada com ID: " + codigo,
+                    "Família",
+                    "codigo",
+                    codigo.toString(),
+                    HttpStatus.NOT_FOUND
+            );
+        }
         familiaRepository.deleteById(codigo);
     }
 
