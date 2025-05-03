@@ -2,10 +2,12 @@ package br.univesp.pi.controller;
 
 import br.univesp.pi.domain.dto.EmpresaCreateDTO;
 import br.univesp.pi.domain.dto.EmpresaUpdateDTO;
+import br.univesp.pi.domain.dto.response.ApiResponse;
 import br.univesp.pi.domain.dto.response.EmpresaResponseDTO;
 import br.univesp.pi.service.EmpresaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,28 +20,34 @@ public class EmpresaController {
     private EmpresaService empresaService;
 
     @PostMapping
-    public EmpresaResponseDTO salvarEmpresa(@Valid @RequestBody EmpresaCreateDTO empresa) {
-        return empresaService.salvarEmpresa(empresa);
+    public ResponseEntity<ApiResponse<EmpresaResponseDTO>> salvarEmpresa(@Valid @RequestBody EmpresaCreateDTO empresaDTO) {
+        EmpresaResponseDTO empresa = empresaService.salvarEmpresa(empresaDTO);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Empresa criada com sucesso", empresa));
     }
 
     @GetMapping
-    public List<EmpresaResponseDTO> listarEmpresas() {
-        return empresaService.listarEmpresas();
+    public ResponseEntity<ApiResponse<List<EmpresaResponseDTO>>> listarEmpresas() {
+        List<EmpresaResponseDTO> empresas = empresaService.listarEmpresas();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Empresas listadas com sucesso", empresas));
     }
 
     @GetMapping("/{id}")
-    public EmpresaResponseDTO buscarEmpresaPorId(@PathVariable Long id) {
-        return empresaService.buscarEmpresasPorId(id);
+    public ResponseEntity<ApiResponse<EmpresaResponseDTO>> buscarEmpresaPorId(@PathVariable Long id) {
+        EmpresaResponseDTO empresa = empresaService.buscarEmpresasPorId(id);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Empresa encontrada com sucesso", empresa));
     }
 
     @PutMapping("/{id}")
-    public EmpresaResponseDTO atualizarEmpresa(@PathVariable Long id, @Valid @RequestBody EmpresaUpdateDTO empresa) {
-        return empresaService.atualizarEmpresa(id, empresa);
+    public ResponseEntity<ApiResponse<EmpresaResponseDTO>> atualizarEmpresa(
+            @PathVariable Long id,
+            @Valid @RequestBody EmpresaUpdateDTO empresaDTO) {
+        EmpresaResponseDTO atualizada = empresaService.atualizarEmpresa(id, empresaDTO);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Empresa atualizada com sucesso", atualizada));
     }
 
     @DeleteMapping("/{id}")
-    public void excluirEmpresa(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> excluirEmpresa(@PathVariable Long id) {
         empresaService.excluirEmpresa(id);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Empresa excluída com sucesso", null));
     }
 }
-

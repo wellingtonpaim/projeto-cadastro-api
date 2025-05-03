@@ -9,6 +9,7 @@ import br.univesp.pi.repository.EmpresaRepository;
 import br.univesp.pi.service.EmpresaService;
 import br.univesp.pi.util.MapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,6 @@ public class EmpresaServiceImpl implements EmpresaService {
         empresa.setLogotipoPath(dto.getLogotipoPath());
 
         Empresa saved = empresaRepository.save(empresa);
-
         return mapperUtil.map(saved, EmpresaResponseDTO.class);
     }
 
@@ -54,7 +54,8 @@ public class EmpresaServiceImpl implements EmpresaService {
                         "Empresa não encontrada com ID: " + id,
                         "Empresa",
                         "id",
-                        id.toString()
+                        id.toString(),
+                        HttpStatus.NOT_FOUND
                 ));
         return mapperUtil.map(empresa, EmpresaResponseDTO.class);
     }
@@ -67,7 +68,8 @@ public class EmpresaServiceImpl implements EmpresaService {
                         "Empresa não encontrada com ID: " + id,
                         "Empresa",
                         "id",
-                        id.toString()
+                        id.toString(),
+                        HttpStatus.NOT_FOUND
                 ));
 
         if (dto.getRazaoSocial() != null) empresa.setRazaoSocial(dto.getRazaoSocial());
@@ -80,7 +82,6 @@ public class EmpresaServiceImpl implements EmpresaService {
         if (dto.getLogotipoPath() != null) empresa.setLogotipoPath(dto.getLogotipoPath());
 
         Empresa saved = empresaRepository.save(empresa);
-
         return mapperUtil.map(saved, EmpresaResponseDTO.class);
     }
 
@@ -92,10 +93,10 @@ public class EmpresaServiceImpl implements EmpresaService {
                     "Empresa não encontrada com ID: " + id,
                     "Empresa",
                     "id",
-                    id.toString()
+                    id.toString(),
+                    HttpStatus.NOT_FOUND
             );
         }
         empresaRepository.deleteById(id);
     }
 }
-

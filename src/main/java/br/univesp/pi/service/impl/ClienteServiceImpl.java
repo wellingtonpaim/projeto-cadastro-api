@@ -8,9 +8,10 @@ import br.univesp.pi.exception.ApiIllegalArgumentException;
 import br.univesp.pi.repository.ClienteRepository;
 import br.univesp.pi.service.ClienteService;
 import br.univesp.pi.util.MapperUtil;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -34,9 +35,8 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setTelefones(dto.getTelefones());
         cliente.setEndereco(dto.getEndereco());
 
-        cliente = clienteRepository.save(cliente);
-
-        return mapperUtil.map(cliente, ClienteResponseDTO.class);
+        Cliente saved = clienteRepository.save(cliente);
+        return mapperUtil.map(saved, ClienteResponseDTO.class);
     }
 
     @Override
@@ -52,7 +52,8 @@ public class ClienteServiceImpl implements ClienteService {
                         "Cliente não encontrado com CPF/CNPJ: " + cpfOuCnpj,
                         "Cliente",
                         "cpfOuCnpj",
-                        cpfOuCnpj
+                        cpfOuCnpj,
+                        HttpStatus.NOT_FOUND
                 ));
         return mapperUtil.map(cliente, ClienteResponseDTO.class);
     }
@@ -60,12 +61,13 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public List<ClienteResponseDTO> buscarClientePorNomeOuRazaoSocial(String nomeOuRazaoSocial) {
         List<Cliente> clientes = clienteRepository.findByNomeOuRazaoSocialContainingIgnoreCase(nomeOuRazaoSocial);
-        if (clientes.isEmpty()) {
+        if (clientes == null || clientes.isEmpty()) {
             throw new ApiIllegalArgumentException(
                     "Nenhum cliente encontrado com o nome ou razão social: " + nomeOuRazaoSocial,
                     "Cliente",
                     "nomeOuRazaoSocial",
-                    nomeOuRazaoSocial
+                    nomeOuRazaoSocial,
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(clientes, ClienteResponseDTO.class);
@@ -74,12 +76,13 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public List<ClienteResponseDTO> buscarClientePorEmail(String email) {
         List<Cliente> clientes = clienteRepository.findByEmailContainingIgnoreCase(email);
-        if (clientes.isEmpty()) {
+        if (clientes == null || clientes.isEmpty()) {
             throw new ApiIllegalArgumentException(
                     "Nenhum cliente encontrado com o email: " + email,
                     "Cliente",
                     "email",
-                    email
+                    email,
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(clientes, ClienteResponseDTO.class);
@@ -88,44 +91,37 @@ public class ClienteServiceImpl implements ClienteService {
     @Transactional
     @Override
     public ClienteResponseDTO atualizarCliente(String cpfOuCnpj, ClienteUpdateDTO dto) {
-        Cliente clienteExistente = clienteRepository.findByCpfOuCnpj(cpfOuCnpj).orElse(null);
-        if (clienteExistente == null) {
-            throw new ApiIllegalArgumentException(
+        Cliente cliente = clienteRepository.findByCpfOuCnpj(cpfOuCnpj)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
                     "Cliente não encontrado com CPF/CNPJ: " + cpfOuCnpj,
                     "Cliente",
                     "cpfOuCnpj",
-                    cpfOuCnpj
-            );
-        }
+                    cpfOuCnpj,
+                    HttpStatus.NOT_FOUND
+            ));
 
-        if (dto.getTipoPessoa() != null) {
-            clienteExistente.setTipoPessoa(dto.getTipoPessoa());
-        }
+        if (dto.getTipoPessoa() != null) { cliente.setTipoPessoa(dto.getTipoPessoa()); }
+        if (dto.getNomeOuRazaoSocial() != null) { cliente.setNomeOuRazaoSocial(dto.getNomeOuRazaoSocial()); }
+        if (dto.getEmail() != null) { cliente.setEmail(dto.getEmail()); }
+        if (dto.getTelefones() != null) { cliente.setTelefones(dto.getTelefones()); }
+        if (dto.getEndereco() != null) { cliente.setEndereco(dto.getEndereco()); }
 
-        if (dto.getNomeOuRazaoSocial() != null) {
-            clienteExistente.setNomeOuRazaoSocial(dto.getNomeOuRazaoSocial());
-        }
-
-        if (dto.getEmail() != null) {
-            clienteExistente.setEmail(dto.getEmail());
-        }
-
-        if (dto.getTelefones() != null) {
-            clienteExistente.setTelefones(dto.getTelefones());
-        }
-
-        if (dto.getEndereco() != null) {
-            clienteExistente.setEndereco(dto.getEndereco());
-        }
-
-        Cliente saved = clienteRepository.save(clienteExistente);
-
+        Cliente saved = clienteRepository.save(cliente);
         return mapperUtil.map(saved, ClienteResponseDTO.class);
     }
 
     @Transactional
     @Override
     public void deletarCliente(String cpfOuCnpj) {
+        if (!clienteRepository.existsById(cpfOuCnpj)) {
+            throw new ApiIllegalArgumentException(
+                    "Não foi possível deletar. Cliente não encontrado com CPF/CNPJ: " + cpfOuCnpj,
+                    "Cliente",
+                    "cpfOuCnpj",
+                    cpfOuCnpj,
+                    HttpStatus.NOT_FOUND
+            );
+        }
         clienteRepository.deleteById(cpfOuCnpj);
     }
 }

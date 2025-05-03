@@ -8,6 +8,7 @@ import br.univesp.pi.exception.ApiIllegalArgumentException;
 import br.univesp.pi.repository.FornecedorRepository;
 import br.univesp.pi.service.FornecedorService;
 import br.univesp.pi.util.MapperUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,6 @@ public class FornecedorServiceImpl implements FornecedorService {
         fornecedor.setEndereco(dto.getEndereco());
 
         Fornecedor saved = fornecedorRepository.save(fornecedor);
-
         return mapperUtil.map(saved, FornecedorResponseDTO.class);
     }
 
@@ -52,7 +52,8 @@ public class FornecedorServiceImpl implements FornecedorService {
                         "Fornecedor não encontrado com CPF/CNPJ: " + cpfOuCnpj,
                         "Fornecedor",
                         "cpfOuCnpj",
-                        cpfOuCnpj
+                        cpfOuCnpj,
+                        HttpStatus.NOT_FOUND
                 ));
         return mapperUtil.map(fornecedor, FornecedorResponseDTO.class);
     }
@@ -60,13 +61,13 @@ public class FornecedorServiceImpl implements FornecedorService {
     @Override
     public List<FornecedorResponseDTO> buscarFornecedorPorNomeOuRazaoSocial(String nomeOuRazaoSocial) {
         List<Fornecedor> fornecedores = fornecedorRepository.findByNomeOuRazaoSocialContainingIgnoreCase(nomeOuRazaoSocial);
-
         if (fornecedores == null || fornecedores.isEmpty()) {
             throw new ApiIllegalArgumentException(
                     "Nenhum fornecedor encontrado com nome ou razão social contendo: " + nomeOuRazaoSocial,
                     "Fornecedor",
                     "nomeOuRazaoSocial",
-                    nomeOuRazaoSocial
+                    nomeOuRazaoSocial,
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(fornecedores, FornecedorResponseDTO.class);
@@ -75,13 +76,13 @@ public class FornecedorServiceImpl implements FornecedorService {
     @Override
     public List<FornecedorResponseDTO> buscarFornecedorPorEmail(String email) {
         List<Fornecedor> fornecedores = fornecedorRepository.findByEmailContainingIgnoreCase(email);
-
         if (fornecedores == null || fornecedores.isEmpty()) {
             throw new ApiIllegalArgumentException(
                     "Nenhum fornecedor encontrado com email contendo: " + email,
                     "Fornecedor",
                     "email",
-                    email
+                    email,
+                    HttpStatus.NOT_FOUND
             );
         }
         return mapperUtil.mapList(fornecedores, FornecedorResponseDTO.class);
@@ -90,43 +91,51 @@ public class FornecedorServiceImpl implements FornecedorService {
     @Transactional
     @Override
     public FornecedorResponseDTO atualizarFornecedor(String cpfOuCnpj, FornecedorUpdateDTO dto) {
-        Fornecedor fornecedorExistente = fornecedorRepository.findByCpfOuCnpj(cpfOuCnpj).orElse(null);
-        if (fornecedorExistente == null) {
-            throw new ApiIllegalArgumentException(
+        Fornecedor fornecedor = fornecedorRepository.findByCpfOuCnpj(cpfOuCnpj)
+                .orElseThrow(() -> new ApiIllegalArgumentException(
                     "Fornecedor não encontrado com CPF/CNPJ: " + cpfOuCnpj,
                     "Fornecedor",
                     "cpfOuCnpj",
-                    cpfOuCnpj
-            );
-        }
+                    cpfOuCnpj,
+                    HttpStatus.NOT_FOUND
+            ));
 
         if (dto.getTipoPessoa() != null) {
-            fornecedorExistente.setTipoPessoa(dto.getTipoPessoa());
+            fornecedor.setTipoPessoa(dto.getTipoPessoa());
         }
 
         if (dto.getNomeOuRazaoSocial() != null) {
-            fornecedorExistente.setNomeOuRazaoSocial(dto.getNomeOuRazaoSocial());
+            fornecedor.setNomeOuRazaoSocial(dto.getNomeOuRazaoSocial());
         }
 
         if (dto.getEmail() != null) {
-            fornecedorExistente.setEmail(dto.getEmail());
+            fornecedor.setEmail(dto.getEmail());
         }
 
         if (dto.getTelefones() != null) {
-            fornecedorExistente.setTelefones(dto.getTelefones());
+            fornecedor.setTelefones(dto.getTelefones());
         }
 
         if (dto.getEndereco() != null) {
-            fornecedorExistente.setEndereco(dto.getEndereco());
+            fornecedor.setEndereco(dto.getEndereco());
         }
 
-        Fornecedor saved = fornecedorRepository.save(fornecedorExistente);
+        Fornecedor saved = fornecedorRepository.save(fornecedor);
         return mapperUtil.map(saved, FornecedorResponseDTO.class);
     }
 
     @Transactional
     @Override
     public void deletarFornecedor(String cpfOuCnpj) {
+        if (!fornecedorRepository.existsById(cpfOuCnpj)) {
+            throw new ApiIllegalArgumentException(
+                    "Não foi possível deletar. Fornecedor não encontrado com CPF/CNPJ: " + cpfOuCnpj,
+                    "Fornecedor",
+                    "cpfOuCnpj",
+                    cpfOuCnpj,
+                    HttpStatus.NOT_FOUND
+            );
+        }
         fornecedorRepository.deleteById(cpfOuCnpj);
     }
 }
