@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: api_cadastro
+    env: java
+    buildCommand: ./mvnw clean package
+    startCommand: java -jar target/api_Cadastro-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: homologacao
+    plan: free
