@@ -37,8 +37,8 @@ public class AuthService {
         }
     }
 
-    @Value("${app.email.sender}")
-    private String senderEmail;
+    @Value("${spring.mail.username}")
+    private String emailFrom;
 
     @Transactional
     public void register(UsuarioRegisterDTO dto) {
@@ -74,7 +74,7 @@ public class AuthService {
                     .subject("Confirmação de Cadastro")
                     .body(htmlBody)
                     .to(usuario.getEmail())
-                    .from(senderEmail)
+                    .from(emailFrom)
                     .build();
 
             emailSenderService.sendEmail(emailRequest);
