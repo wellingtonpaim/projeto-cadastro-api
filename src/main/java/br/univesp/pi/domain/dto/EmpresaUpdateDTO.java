@@ -14,8 +14,9 @@ public class EmpresaUpdateDTO {
 
     private String razaoSocial;
     private String cnpj;
+    private String nomeFantasia;
     private String inscricaoEstadual;
-    private List<Telefone> telefone;
+    private List<Telefone> telefones;
     private String email;
     private Endereco endereco;
     private String site;

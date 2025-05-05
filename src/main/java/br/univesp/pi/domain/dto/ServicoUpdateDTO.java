@@ -6,6 +6,7 @@ import br.univesp.pi.validation.CpfCnpj;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class ServicoUpdateDTO {
@@ -14,7 +15,7 @@ public class ServicoUpdateDTO {
     private String cliente; // CPF ou CNPJ
 
     private MaoDeObra maoDeObra;
-    private List<Long> produtos; // Lista de códigos dos produtos
+    private Set<ServicoItemDTO> itens;
     private Desconto desconto;
 }
 

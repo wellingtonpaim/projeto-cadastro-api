@@ -9,6 +9,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.br.CNPJ;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class ServicoCreateDTO {
@@ -18,9 +19,7 @@ public class ServicoCreateDTO {
     private String cliente; // CPF ou CNPJ
 
     private MaoDeObra maoDeObra;
-
-    private List<Long> produtos; // Lista de códigos dos produtos
-
+    private Set<ServicoItemDTO> itens;
     private Desconto desconto;
 }
 

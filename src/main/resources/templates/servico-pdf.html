@@ -1,69 +1,238 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        .header { display: flex; align-items: center; margin-bottom: 20px; }
-        .logo { width: 160px; height: 160px; }
-        .empresa-info { margin-left: 20px; }
-        .center-title { text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .right { text-align: right; }
-        .cliente-info, .produtos { margin-top: 20px; }
+    <meta charset="UTF-8"/>
+    <style type="text/css">
+        /* Regras de página e estilo principal */
+        @page {
+            size: A4;
+            margin: 10mm;
+            margin-bottom: 20mm; /* Espaço para o rodapé fixo */
+        }
+
+        /* Estilos otimizados para PDF */
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #000;
+            padding: 10mm;
+            padding-bottom: 20mm; /* Espaço reservado para o rodapé */
+            margin: 0;
+            position: relative;
+        }
+
+        .header {
+            width: 100%;
+            margin-bottom: 10mm;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5mm;
+            overflow: hidden;
+        }
+
+        .logo-container {
+            width: 45mm;
+            height: 45mm;
+            border: 0.5pt solid #ccc;
+            padding: 1mm;
+            float: left;
+            margin-right: 5mm;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .empresa-info {
+            float: left;
+            width: calc(100% - 55mm);
+        }
+
+        .empresa-name {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 2mm;
+        }
+
+        .empresa-line {
+            white-space: nowrap;
+        }
+
+        .document-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+            margin: 5mm 0;
+            text-transform: uppercase;
+        }
+
+        .dates-row {
+            margin-bottom: 5mm;
+            padding: 2mm;
+            background-color: #f5f5f5;
+            border-radius: 1mm;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 5mm;
+            padding: 2mm 0 2mm 3mm;
+            border-left: 2pt solid #0066cc;
+            background-color: #f5f5f5;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 10pt;
+            font-weight: bold;
+            margin-bottom: 2mm;
+            text-transform: uppercase;
+        }
+
+        .product-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .product-list li {
+            padding: 1mm 0;
+            border-bottom: 0.5pt dashed #ccc;
+        }
+
+        .totals {
+            margin-top: 10mm;
+            border-top: 1pt solid #000;
+            padding-top: 3mm;
+            page-break-inside: avoid;
+        }
+
+        .total-item {
+            margin-bottom: 2mm;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .total-label {
+            font-weight: bold;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #900;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 10mm;
+            right: 10mm;
+            padding: 2mm 0;
+            border-top: 0.5pt solid #ccc;
+            font-size: 8pt;
+            text-align: center;
+            color: #666;
+            line-height: 1.2;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .clear {
+            clear: both;
+        }
+
+        .avoid-break {
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <img th:src="@{${empresa.logotipoPath}}" class="logo" />
+    <div class="logo-container">
+        <img th:src="${logoBase64}" class="logo" alt="Logo da empresa"/>
+    </div>
     <div class="empresa-info">
-        <div><b th:text="${empresa.razaoSocial}"></b></div>
-        <div th:text="${empresa.endereco}"></div>
-        <div th:text="'CNPJ: ' + ${empresa.cnpj}"></div>
-        <div th:text="'IE: ' + ${empresa.inscricaoEstadual}"></div>
-        <div th:text="'Telefone: ' + ${empresa.telefone}"></div>
-        <div th:text="'Email: ' + ${empresa.email}"></div>
-        <div th:text="${empresa.site}"></div>
+        <div class="empresa-name" th:text="${empresa.nomeFantasia}">Sinergia - Controle de Pragas Urbanas</div>
+        <div class="empresa-line" th:text="${empresa.razaoSocial}">Solução Ambiental Ltda</div>
+        <div class="empresa-line" th:text="'Endereço: ' + ${empresa.endereco.logradouro} + ', ' + ${empresa.endereco.numero} + ' - ' + ${empresa.endereco.bairro} + ' - ' + ${empresa.endereco.cidade} + ' - ' + ${empresa.endereco.uf}">
+            Endereço: Rua Marechal Deodoro, 1302 - Sala 02 Centro - Taquaritinga - SP
+        </div>
+        <div class="empresa-line" th:text="'CNPJ: ' + ${empresa.cnpj}">CNPJ: 25401073000116</div>
+        <div class="empresa-line" th:text="'Telefones: ' + ${empresa.telefonesFormatados}">Telefones: 16 - 32524976 ; 16 - 32524984</div>
+        <div class="empresa-line" th:text="'Email: ' + ${empresa.email}">Email: contato@grupovelocci.com.br</div>
+        <div class="empresa-line" th:text="'Site: ' + ${empresa.site}">Site: www.sinergia.com.br</div>
+    </div>
+    <div class="clear"></div>
+</div>
+
+<div class="document-title">
+    ORDEM DE SERVIÇO: <span th:text="${servico.codigo}">8</span>
+</div>
+
+<div class="dates-row">
+    <span><b>Data abertura do chamado:</b> <span th:text="${#temporals.format(servico.dataCriacao, 'dd/MM/yyyy HH:mm')}">04/05/2025 10:40</span></span>
+    <span style="margin-left: 20px;"><b>Data Impressão:</b> <span th:text="${#temporals.format(dataImpressao, 'dd/MM/yyyy HH:mm')}">04/05/2025 19:15</span></span>
+</div>
+
+<div class="section">
+    <div class="section-title">CLIENTE</div>
+    <div>
+        <p><b>Nome/Razão Social:</b> <span th:text="${servico.cliente.nomeOuRazaoSocial}">Pedro Oliveira</span></p>
+        <p><b>Email:</b> <span th:text="${servico.cliente.email}">pedro.oliveira@yahoo.com.br</span></p>
+        <p><b>Telefone:</b> <span th:text="${servico.cliente.telefones[0].numero}">32223333</span></p>
+        <p><b>Endereço:</b> <span th:text="|${servico.cliente.endereco.logradouro}, ${servico.cliente.endereco.numero}|">Rua das Palmeiras, 300</span></p>
     </div>
 </div>
 
-<div class="center-title">
-    Ordem de Serviço: <span th:text="${servico.codigo}"></span>
+<div class="section">
+    <div class="section-title">SERVIÇO CONTRATADO</div>
+    <div>
+        <p th:text="${servico.maoDeObra.descricao}">Desenvolver Sistema para estacionamento de venda de automóveis</p>
+        <p><b>Valor do serviço contratado:</b> R$ <span th:text="${#numbers.formatDecimal(servico.maoDeObra.preco, 1, 2, 'COMMA')}">4.000,00</span></p>
+    </div>
 </div>
 
-<div class="row">
-    <div>Data abertura do chamado: <span th:text="${servico.dataCriacao}"></span></div>
-    <div class="right">Data Impressão: <span th:text="${dataImpressao}"></span></div>
+<div class="section">
+    <div class="section-title">LISTA DE PRODUTOS</div>
+    <div>
+        <ul class="product-list">
+            <li th:each="item : ${servico.itens}">
+                <span th:text="${item.produto.nome}">Produto</span> -
+                Quantidade: <span th:text="${item.quantidade}">1</span> -
+                Preço unitário: R$ <span th:text="${#numbers.formatDecimal(item.precoUnitario, 1, 2, 'COMMA')}">0,00</span> -
+                Total: R$ <span th:text="${#numbers.formatDecimal(item.precoTotalItem, 1, 2, 'COMMA')}">0,00</span>
+            </li>
+        </ul>
+    </div>
 </div>
 
-<div class="cliente-info">
-    <h4>Cliente</h4>
-    <div>Nome/Razão Social: <span th:text="${servico.cliente.nomeOuRazaoSocial}"></span></div>
-    <div>Email: <span th:text="${servico.cliente.email}"></span></div>
-    <div>Telefone: <span th:text="${servico.cliente.telefones[0].numero}"></span></div>
-    <div>Endereço: <span th:text="${servico.cliente.endereco.logradouro} + ', ' + ${servico.cliente.endereco.numero}"></span></div>
+<div class="totals">
+    <div class="total-item">
+        <span class="total-label">Preço Total Produtos:</span>
+        <span>R$ <span th:text="${#numbers.formatDecimal(servico.precoTotalProdutos, 1, 2, 'COMMA')}">2.999,90</span></span>
+    </div>
+    <div class="total-item">
+        <span class="total-label">Preço Total:</span>
+        <span>R$ <span th:text="${#numbers.formatDecimal(servico.precoTotal, 1, 2, 'COMMA')}">6.999,90</span></span>
+    </div>
+    <div class="total-item">
+        <span class="total-label">Desconto:</span>
+        <span>R$ <span th:text="${#numbers.formatDecimal(servico.desconto.valor, 1, 2, 'COMMA')}">699,99</span></span>
+    </div>
+    <div class="total-item highlight">
+        <span class="total-label">Valor total com Desconto:</span>
+        <span>R$ <span th:text="${#numbers.formatDecimal(servico.precoTotalComDesconto, 1, 2, 'COMMA')}">6.299,91</span></span>
+    </div>
 </div>
 
-<div class="mao-de-obra">
-    <h4>Serviço contratado:</h4>
-    <div th:text="${servico.maoDeObra.descricao}"></div>
-    <div>Preço da mão de obra: R$ <span th:text="${servico.maoDeObra.preco}"></span></div>
-</div>
-
-<div class="produtos">
-    <h4>Lista de Produtos:</h4>
-    <ul>
-        <li th:each="produto : ${servico.produtos}">
-            <span th:text="${produto.nome}"></span> - R$ <span th:text="${produto.preco}"></span>
-        </li>
-    </ul>
-</div>
-
-<div class="totais">
-    <div class="right">Preço Total Produtos: R$ <span th:text="${servico.precoTotalProdutos}"></span></div>
-    <div class="right">Preço Total: R$ <span th:text="${servico.precoTotal}"></span></div>
-    <div class="right">Desconto: R$ <span th:text="${servico.desconto.valor}"></span></div>
-    <div class="right">Valor total com Desconto: R$ <span th:text="${servico.precoTotalComDesconto}"></span></div>
+<div class="footer">
+    <div>Documento gerado eletronicamente por <span th:text="${empresa.nomeFantasia}">Sinergia</span> em <span th:text="${#temporals.format(dataImpressao, 'dd/MM/yyyy HH:mm')}">04/05/2025 19:15</span></div>
+    <div>Este documento não necessita de assinatura</div>
 </div>
 
 </body>

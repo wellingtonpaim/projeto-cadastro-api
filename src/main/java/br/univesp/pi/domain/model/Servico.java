@@ -1,10 +1,12 @@
 package br.univesp.pi.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -27,13 +29,8 @@ public class Servico {
     })
     private MaoDeObra maoDeObra;
 
-    @ManyToMany
-    @JoinTable(
-            name = "servico_produto",
-            joinColumns = @JoinColumn(name = "servico_codigo"),
-            inverseJoinColumns = @JoinColumn(name = "produto_codigo")
-    )
-    private List<Produto> produtos;
+    @OneToMany(mappedBy = "servico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemServico> itens = new ArrayList<>();
 
     @Column(name = "preco_total_produtos")
     private Double precoTotalProdutos;
@@ -53,6 +50,35 @@ public class Servico {
 
     @CreationTimestamp
     @Column(name = "data_criacao")
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Sao_Paulo")
     private LocalDateTime dataCriacao;
 
+    public void adicionarItem(Produto produto, Integer quantidade) {
+        if (this.itens == null) {
+            this.itens = new ArrayList<>();
+        }
+
+        ItemServico item = new ItemServico();
+        item.setServico(this);
+        item.setProduto(produto);
+        item.setQuantidade(quantidade);
+        item.setPrecoUnitario(produto.getPreco());
+        item.setPrecoTotalItem(produto.getPreco() * quantidade);
+
+        this.itens.add(item);
+    }
+
+    public void calcularTotais() {
+        this.precoTotalProdutos = itens.stream()
+                .mapToDouble(ItemServico::getPrecoTotalItem)
+                .sum();
+
+        this.precoTotal = this.precoTotalProdutos + this.maoDeObra.getPreco();
+
+        if (this.desconto != null && this.desconto.getValor() != null) {
+            this.precoTotalComDesconto = this.precoTotal - this.desconto.getValor();
+        } else {
+            this.precoTotalComDesconto = this.precoTotal;
+        }
+    }
 }

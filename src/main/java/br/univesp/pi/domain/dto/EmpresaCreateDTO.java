@@ -20,6 +20,8 @@ public class EmpresaCreateDTO {
     private String cnpj;
 
     @NotBlank
+    private String nomeFantasia;
+
     private String inscricaoEstadual;
 
     private List<Telefone> telefones;
