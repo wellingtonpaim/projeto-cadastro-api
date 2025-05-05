@@ -31,8 +31,9 @@ public class EmpresaServiceImpl implements EmpresaService {
         empresa.setRazaoSocial(dto.getRazaoSocial());
         empresa.setEndereco(dto.getEndereco());
         empresa.setCnpj(dto.getCnpj());
+        empresa.setNomeFantasia(dto.getNomeFantasia());
         empresa.setInscricaoEstadual(dto.getInscricaoEstadual());
-        empresa.setTelefone(dto.getTelefones());
+        empresa.setTelefones(dto.getTelefones());
         empresa.setEmail(dto.getEmail());
         empresa.setSite(dto.getSite());
         empresa.setLogotipoPath(dto.getLogotipoPath());
@@ -75,8 +76,9 @@ public class EmpresaServiceImpl implements EmpresaService {
         if (dto.getRazaoSocial() != null) empresa.setRazaoSocial(dto.getRazaoSocial());
         if (dto.getEndereco() != null) empresa.setEndereco(dto.getEndereco());
         if (dto.getCnpj() != null) empresa.setCnpj(dto.getCnpj());
+        if (dto.getNomeFantasia() != null) empresa.setNomeFantasia(dto.getNomeFantasia());
         if (dto.getInscricaoEstadual() != null) empresa.setInscricaoEstadual(dto.getInscricaoEstadual());
-        if (dto.getTelefone() != null) empresa.setTelefone(dto.getTelefone());
+        if (dto.getTelefones() != null) empresa.setTelefones(dto.getTelefones());
         if (dto.getEmail() != null) empresa.setEmail(dto.getEmail());
         if (dto.getSite() != null) empresa.setSite(dto.getSite());
         if (dto.getLogotipoPath() != null) empresa.setLogotipoPath(dto.getLogotipoPath());

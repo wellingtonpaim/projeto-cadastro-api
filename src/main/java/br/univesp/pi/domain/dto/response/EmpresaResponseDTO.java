@@ -13,8 +13,9 @@ public class EmpresaResponseDTO {
     private String razaoSocial;
     private Endereco endereco;
     private String cnpj;
+    private String nomeFantasia;
     private String inscricaoEstadual;
-    private List<Telefone> telefone;
+    private List<Telefone> telefones;
     private String email;
     private String site;
     private String logotipoPath;
