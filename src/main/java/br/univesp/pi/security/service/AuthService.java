@@ -65,7 +65,7 @@ public class AuthService {
 
     private void sendConfirmationEmailAsync(Usuario usuario, String token) {
         CompletableFuture.runAsync(() -> {
-            String confirmationUrl = "http://localhost:8080/auth/confirmar?token=" + token;
+            String confirmationUrl = "http://wjbcsystems.shop:8080/auth/confirmar?token=" + token;
             String htmlBody = "<p>Olá " + usuario.getNomeUsuario() + ",</p>"
                     + "<p>Por favor, confirme seu cadastro clicando no link abaixo:</p>"
                     + "<a href=\"" + confirmationUrl + "\">Confirmar Cadastro</a>";

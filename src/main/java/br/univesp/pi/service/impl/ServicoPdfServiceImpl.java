@@ -47,7 +47,7 @@ public class ServicoPdfServiceImpl implements ServicoPdfService {
         if (empresa.getLogotipoPath() != null) {
             try {
                 ClassPathResource imgFile = new ClassPathResource(empresa.getLogotipoPath());
-                byte[] imageBytes = Files.readAllBytes(imgFile.getFile().toPath());
+                byte[] imageBytes = imgFile.getInputStream().readAllBytes();
                 logoBase64 = "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
             } catch (Exception e) {
                 System.err.println("Erro ao carregar logotipo: " + e.getMessage());
@@ -74,66 +74,3 @@ public class ServicoPdfServiceImpl implements ServicoPdfService {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-//package br.univesp.pi.service.impl;
-//
-//import br.univesp.pi.domain.model.Empresa;
-//import br.univesp.pi.domain.model.Servico;
-//import br.univesp.pi.service.ServicoPdfService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.core.io.ClassPathResource;
-//import org.springframework.stereotype.Service;
-//import org.thymeleaf.TemplateEngine;
-//import org.thymeleaf.context.Context;
-//import org.xhtmlrenderer.pdf.ITextRenderer;
-//
-//import java.io.ByteArrayOutputStream;
-//import java.time.LocalDateTime;
-//import java.util.Base64;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class ServicoPdfServiceImpl implements ServicoPdfService {
-//
-//    private final TemplateEngine templateEngine;
-//
-//    @Override
-//    public byte[] gerarPdf(Servico servico, Empresa empresa) throws Exception {
-//        Context context = new Context();
-//        context.setVariable("servico", servico);
-//        context.setVariable("empresa", empresa);
-//        context.setVariable("dataImpressao", LocalDateTime.now());
-//
-//        // Converte a imagem da logo para base64
-//        String logoBase64 = "";
-//        if (empresa.getLogotipoPath() != null) {
-//            try {
-//                ClassPathResource imgFile = new ClassPathResource(empresa.getLogotipoPath());
-//                byte[] imageBytes = imgFile.getInputStream().readAllBytes();
-//                logoBase64 = "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
-//            } catch (Exception e) {
-//                // Logar o erro ou tratar conforme necessário
-//                System.err.println("Erro ao carregar logotipo: " + e.getMessage());
-//            }
-//        }
-//        context.setVariable("logoBase64", logoBase64);
-//
-//        String htmlContent = templateEngine.process("servico-pdf", context);
-//
-//        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-//            ITextRenderer renderer = new ITextRenderer();
-//            renderer.setDocumentFromString(htmlContent);
-//            renderer.layout();
-//            renderer.createPDF(outputStream);
-//            return outputStream.toByteArray();
-//        }
-//    }
-//}
