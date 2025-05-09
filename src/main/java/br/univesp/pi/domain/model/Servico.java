@@ -73,12 +73,22 @@ public class Servico {
                 .mapToDouble(ItemServico::getPrecoTotalItem)
                 .sum();
 
-        this.precoTotal = this.precoTotalProdutos + this.maoDeObra.getPreco();
+        double precoMaoDeObra = this.maoDeObra != null ? this.maoDeObra.getPreco() : 0.0;
+        this.precoTotal = this.precoTotalProdutos + precoMaoDeObra;
 
-        if (this.desconto != null && this.desconto.getValor() != null) {
-            this.precoTotalComDesconto = this.precoTotal - this.desconto.getValor();
-        } else {
-            this.precoTotalComDesconto = this.precoTotal;
+        this.precoTotalComDesconto = calcularPrecoComDesconto(this.precoTotal, this.desconto);
+
+    }
+
+    private double calcularPrecoComDesconto(double precoTotal, Desconto desconto) {
+        if (desconto == null || desconto.getValor() == null) {
+            return precoTotal;
         }
+
+        double valorDesconto = desconto.getTipo().equals("PORCENTAGEM")
+                ? (desconto.getValor() / 100.0) * precoTotal
+                : desconto.getValor();
+
+        return precoTotal - valorDesconto;
     }
 }
