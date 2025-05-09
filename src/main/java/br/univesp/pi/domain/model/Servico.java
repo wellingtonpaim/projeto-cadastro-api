@@ -1,5 +1,6 @@
 package br.univesp.pi.domain.model;
 
+import br.univesp.pi.enumeration.TipoDesconto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -85,7 +86,7 @@ public class Servico {
             return precoTotal;
         }
 
-        double valorDesconto = desconto.getTipo().equals("PORCENTAGEM")
+        double valorDesconto = desconto.getTipo() == TipoDesconto.PORCENTAGEM
                 ? (desconto.getValor() / 100.0) * precoTotal
                 : desconto.getValor();
 
