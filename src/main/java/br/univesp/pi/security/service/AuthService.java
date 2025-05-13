@@ -3,6 +3,7 @@ package br.univesp.pi.security.service;
 import br.univesp.pi.domain.dto.EmailRequestDTO;
 import br.univesp.pi.domain.dto.UsuarioRegisterDTO;
 import br.univesp.pi.domain.model.Usuario;
+import br.univesp.pi.enumeration.CategoriaUsuario;
 import br.univesp.pi.security.model.ConfirmationToken;
 import br.univesp.pi.security.repository.ConfirmationTokenRepository;
 import br.univesp.pi.service.EmailSenderService;
@@ -47,11 +48,14 @@ public class AuthService {
             throw new IllegalArgumentException("Email já cadastrado!");
         }
 
+        String categoriaUsuario = dto.getCategoria().toUpperCase();
+
         Usuario usuario = new Usuario();
         usuario.setNomeUsuario(dto.getNomeUsuario());
         usuario.setEmail(dto.getEmail());
         usuario.setSenha(dto.getSenha());
-        usuario.setCategoria(dto.getCategoria());
+        usuario.setCategoria(categoriaUsuario.equals("ADMINISTRADOR")
+                ? CategoriaUsuario.ADMINISTRADOR : CategoriaUsuario.USUARIO);
         usuario.setAtivo(false);
 
         Usuario usuarioSalvo = usuarioService.salvarUsuario(usuario);
@@ -65,7 +69,7 @@ public class AuthService {
 
     private void sendConfirmationEmailAsync(Usuario usuario, String token) {
         CompletableFuture.runAsync(() -> {
-            String confirmationUrl = "http://wjbcsystems.shop:8080/auth/confirmar?token=" + token;
+            String confirmationUrl = "http://wjbcsystems.shop:5173/auth/confirmar?token=" + token;
             String htmlBody = "<p>Olá " + usuario.getNomeUsuario() + ",</p>"
                     + "<p>Por favor, confirme seu cadastro clicando no link abaixo:</p>"
                     + "<a href=\"" + confirmationUrl + "\">Confirmar Cadastro</a>";
