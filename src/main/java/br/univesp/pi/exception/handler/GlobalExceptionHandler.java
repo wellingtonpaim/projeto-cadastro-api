@@ -5,6 +5,8 @@ import br.univesp.pi.exception.ApiIllegalArgumentException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -84,4 +86,39 @@ public class GlobalExceptionHandler {
         }
         return "Verifique os dados fornecidos e tente novamente.";
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        String mensagem = "Erro ao interpretar os dados enviados. Verifique o formato e os valores informados.";
+
+        List<String> detalhes;
+
+        // Tenta identificar o motivo específico (como valor inválido para enum)
+        Throwable causa = ex.getCause();
+        if (causa instanceof InvalidFormatException ife) {
+            String campo = ife.getPath().stream()
+                    .map(ref -> ref.getFieldName())
+                    .collect(Collectors.joining("."));
+            String valorInvalido = ife.getValue().toString();
+            String tipoEsperado = ife.getTargetType().getSimpleName();
+
+            String detalhe = "Campo '" + campo + "' recebeu o valor inválido '" + valorInvalido +
+                    "'. Esperado: um valor compatível com " + tipoEsperado + ".";
+
+            detalhes = List.of(detalhe);
+        } else {
+            detalhes = List.of(ex.getMostSpecificCause().getMessage());
+        }
+
+        ApiResponse<Void> resposta = new ApiResponse<>(
+                false,
+                mensagem,
+                null,
+                detalhes,
+                new Date()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resposta);
+    }
+
 }
