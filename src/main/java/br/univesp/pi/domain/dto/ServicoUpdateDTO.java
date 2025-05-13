@@ -5,7 +5,6 @@ import br.univesp.pi.domain.model.MaoDeObra;
 import br.univesp.pi.validation.CpfCnpj;
 import lombok.Data;
 
-import java.util.List;
 import java.util.Set;
 
 @Data

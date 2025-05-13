@@ -1,6 +1,5 @@
 package br.univesp.pi.domain.dto;
 
-import br.univesp.pi.enumeration.CategoriaUsuario;
 import br.univesp.pi.validation.SenhaValida;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -20,5 +19,5 @@ public class UsuarioRegisterDTO {
     @SenhaValida
     private String senha;
 
-    private CategoriaUsuario categoria = CategoriaUsuario.USUARIO;
+    private String categoria = "USUARIO";
 }
