@@ -1,17 +1,40 @@
 package br.univesp.pi.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.spi.MappingContext;
+import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 
 @Component
 public class MapperUtil {
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
+
+    public MapperUtil() {
+        this.modelMapper = new ModelMapper();
+        configurarConversoes();
+    }
+
+    private void configurarConversoes() {
+        // Conversor de BigDecimal para Double com 2 casas decimais
+        Converter<BigDecimal, Double> bigDecimalToDoubleConverter = new Converter<>() {
+            @Override
+            public Double convert(MappingContext<BigDecimal, Double> context) {
+                BigDecimal source = context.getSource();
+                if (source == null) return null;
+                return source.setScale(2, RoundingMode.HALF_UP).doubleValue();
+            }
+        };
+
+        // Registrar conversão global
+        modelMapper.createTypeMap(BigDecimal.class, Double.class);
+        modelMapper.addConverter(bigDecimalToDoubleConverter);
+    }
 
     public <E, D> D map(E source, Class<D> targetClass) {
         if (source == null || targetClass == null) {

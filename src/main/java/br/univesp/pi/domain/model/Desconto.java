@@ -6,6 +6,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Embeddable
 public class Desconto {
@@ -13,5 +15,5 @@ public class Desconto {
     @Enumerated(EnumType.STRING)
     private TipoDesconto tipo;
 
-    private Double valor;
+    private BigDecimal valor;
 }

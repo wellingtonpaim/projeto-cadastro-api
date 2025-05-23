@@ -69,7 +69,7 @@ public class AuthService {
 
     private void sendConfirmationEmailAsync(Usuario usuario, String token) {
         CompletableFuture.runAsync(() -> {
-            String confirmationUrl = "http://wjbcsystems.shop:5173/auth/confirmar?token=" + token;
+            String confirmationUrl = "http://wjbcsystems.shop:8888/auth/confirmar?token=" + token;
             String htmlBody = "<p>Olá " + usuario.getNomeUsuario() + ",</p>"
                     + "<p>Por favor, confirme seu cadastro clicando no link abaixo:</p>"
                     + "<a href=\"" + confirmationUrl + "\">Confirmar Cadastro</a>";
@@ -87,7 +87,7 @@ public class AuthService {
 
     public void confirmEmail(String token) {
         ConfirmationToken confirmationToken = confirmationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("Token inválido"));
+                .orElseThrow(() -> new IllegalArgumentException("Email confirmado com sucesso!"));
 
         if (confirmationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("Token expirado");

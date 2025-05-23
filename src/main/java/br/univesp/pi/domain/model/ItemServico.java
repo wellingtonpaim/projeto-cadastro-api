@@ -3,6 +3,8 @@ package br.univesp.pi.domain.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 @Table(name = "servico_produto")
@@ -25,10 +27,10 @@ public class ItemServico {
     private Integer quantidade;
 
     @Column(name = "preco_unitario", nullable = false)
-    private Double precoUnitario;
+    private BigDecimal precoUnitario;
 
     @Column(name = "preco_total_item")
-    private Double precoTotalItem;
+    private BigDecimal precoTotalItem;
 
     public void setServico(Servico servico) {
         this.servico = servico;

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +35,10 @@ public class Servico {
     private List<ItemServico> itens = new ArrayList<>();
 
     @Column(name = "preco_total_produtos")
-    private Double precoTotalProdutos;
+    private BigDecimal precoTotalProdutos;
 
     @Column(name = "preco_total")
-    private Double precoTotal;
+    private BigDecimal precoTotal;
 
     @Embedded
     @AttributeOverrides({
@@ -47,7 +48,7 @@ public class Servico {
     private Desconto desconto;
 
     @Column(name = "preco_total_com_desconto")
-    private Double precoTotalComDesconto;
+    private BigDecimal precoTotalComDesconto;
 
     @CreationTimestamp
     @Column(name = "data_criacao")
@@ -64,32 +65,32 @@ public class Servico {
         item.setProduto(produto);
         item.setQuantidade(quantidade);
         item.setPrecoUnitario(produto.getPreco());
-        item.setPrecoTotalItem(produto.getPreco() * quantidade);
+        item.setPrecoTotalItem(produto.getPreco().multiply(BigDecimal.valueOf(quantidade)));
 
         this.itens.add(item);
     }
 
     public void calcularTotais() {
         this.precoTotalProdutos = itens.stream()
-                .mapToDouble(ItemServico::getPrecoTotalItem)
-                .sum();
+                .map(ItemServico::getPrecoTotalItem)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        double precoMaoDeObra = this.maoDeObra != null ? this.maoDeObra.getPreco() : 0.0;
-        this.precoTotal = this.precoTotalProdutos + precoMaoDeObra;
+        BigDecimal precoMaoDeObra = this.maoDeObra != null ? this.maoDeObra.getPreco() : BigDecimal.ZERO;
+        this.precoTotal = this.precoTotalProdutos.add(precoMaoDeObra);
 
         this.precoTotalComDesconto = calcularPrecoComDesconto(this.precoTotal, this.desconto);
 
     }
 
-    private double calcularPrecoComDesconto(double precoTotal, Desconto desconto) {
+    private BigDecimal calcularPrecoComDesconto(BigDecimal precoTotal, Desconto desconto) {
         if (desconto == null || desconto.getValor() == null) {
             return precoTotal;
         }
 
-        double valorDesconto = desconto.getTipo() == TipoDesconto.PORCENTAGEM
-                ? (desconto.getValor() / 100.0) * precoTotal
+        BigDecimal valorDesconto = desconto.getTipo() == TipoDesconto.PORCENTAGEM
+                ? (desconto.getValor().divide(BigDecimal.valueOf(100.0)).multiply(precoTotal))
                 : desconto.getValor();
 
-        return precoTotal - valorDesconto;
+        return precoTotal.subtract(valorDesconto);
     }
 }

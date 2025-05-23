@@ -5,6 +5,8 @@ import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 @Table(name = "produto")
@@ -25,7 +27,7 @@ public class Produto {
     private String descricao;
 
     @Column(nullable = false)
-    private Double preco;
+    private BigDecimal preco;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fornecedor", referencedColumnName = "cpf_ou_cnpj", nullable = false)
