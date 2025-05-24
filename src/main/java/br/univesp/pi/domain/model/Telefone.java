@@ -18,5 +18,5 @@ public class Telefone {
     private int ddd;
 
     @NotNull
-    private int numero;
+    private Long numero;
 }

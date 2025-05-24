@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -228,7 +229,7 @@ public class ServicoServiceImpl implements ServicoService {
                 ItemServico item = itemExistente.get();
                 item.setQuantidade(itemDTO.getQuantidade());
                 item.setPrecoUnitario(produto.getPreco());
-                item.setPrecoTotalItem(produto.getPreco() * itemDTO.getQuantidade());
+                item.setPrecoTotalItem(produto.getPreco().multiply(BigDecimal.valueOf(itemDTO.getQuantidade())));
             } else {
                 // Adiciona novo item (para criação ou novos itens na atualização)
                 servico.adicionarItem(produto, itemDTO.getQuantidade());

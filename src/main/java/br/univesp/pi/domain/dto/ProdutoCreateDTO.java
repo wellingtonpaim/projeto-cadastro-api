@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class ProdutoCreateDTO {
 
@@ -17,7 +19,7 @@ public class ProdutoCreateDTO {
     private String descricao;
 
     @NotNull
-    private Double preco;
+    private BigDecimal preco;
 
     private String fornecedor;
 
